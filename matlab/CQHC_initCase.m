@@ -10,6 +10,6 @@ function [A, subj] = CQHC_initCase(saveDir)
 % RY 11/2022
 
 cd(saveDir);
-filename='cqPD_dataAll';
+filename='cqHC_dataAll';
 load(filename, 'A') %load A
 subj = unique(A.subjID);

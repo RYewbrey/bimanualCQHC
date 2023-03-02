@@ -21,7 +21,13 @@ seqSet = tbl.seqSet;
 trialType = grp2idx(tbl.trialType); %1: InstructedB; 2: Probe 3: MemoryB
 fractal = grp2idx(tbl.fractalIm); % 1: fractal_1, 2: Fractal_8
 probeTargetPos=tbl.mapping; %% NOTE: this data is offset by one row!!!
-corrKeys = {'y','u','i','l'; 'r','e','w','a'};
+
+for i=1:2%for each sequence, determine correct keys automatically
+    keysIdx = tbl.corAnsList(fractal == i & trialType == 1,:); keysIdx = keysIdx(~cellfun(@isempty,keysIdx));
+    corrKeystemp = unique(cell2mat(keysIdx(1,:)),'stable')';
+    corrKeys(i,:) = cellstr(corrKeystemp(isstrprop(corrKeystemp(:),'alpha')))';
+end
+% corrKeys = [num2cell(corrKeys{1}); num2cell(corrKeys{2})];
 
 %response data
 % RTs = tbl.RTs;
@@ -49,16 +55,16 @@ D.probeTargetPos=nan(size(day,1),1); %probe position in sequence
 D.points=nan(size(day,1),1); %points scored
 D.response=nan(size(day,1),maxpress); %actual presses
 D.targetResp=nan(size(day,1),maxpress); %target presses
-D.responseKey=cell(size(day,1),maxpress); %actual presses
-D.targetRespKey=cell(size(day,1),maxpress); %target presses
+D.responseKey=cell(size(day,1),maxpress); %actual presses (specific keys)
+D.targetRespKey=cell(size(day,1),maxpress); %target presses (specific keys)
 
 for i=1:size(D.RT,1) %for trials, adding data as it goes
     
-    if i == 810
+    if i == 1864 %for debugging
         D;
     end
     
-    if ~isnan(points(i,1)) %if not empty (filled with values or characters)
+    if ~isnan(points(i,1)) %if the trial actually has data (not nan)
         %Write out variables with length of 1:
         %         D.subjID{i}= convertCharsToStrings(participant{i});
         D.subjID(i)= participant(i);
@@ -74,10 +80,13 @@ for i=1:size(D.RT,1) %for trials, adding data as it goes
         try %sequence
             %             D.RT(i,:)=str2num(RTs{i,1});
             D.RT(i,:)=RTs{i,1};
-            D.press(i,:)=str2num(Digits{i,1});
+            D.press(i,:)=str2num(Digits{i,1}); %#ok<ST2NM>
             D.responseKey(i,:)=extractBetween(respList{i},'"','"')';
             D.targetRespKey(i,:)=extractBetween(corAnsList{i},'"','"')';
-            [~, D.response(i,:)]=ismember(D.responseKey(i,:), corrKeys(D.fractal(i,:),:));
+            %             for j = 1:maxpress
+            %                 D.response(i,j) = strfind(strjoin(corrKeys(D.fractal(i,:),:),''),D.responseKey(i,j))
+            %                 %             [~, D.response(i,:)]=ismember(D.responseKey(i,:), corrKeys(D.fractal(i,:),:));
+            %             end
             [~, D.targetResp(i,:)]=ismember(D.targetRespKey(i,:), corrKeys(D.fractal(i,:),:));
             D.error(i,:)=D.response(i,:) ~= D.press(i,:);
             %             D.error(i,:)=str2num(yList{i,1});
@@ -86,7 +95,7 @@ for i=1:size(D.RT,1) %for trials, adding data as it goes
             D.RT(i,1:numel(RTs{i,1}))=str2double(RTs{i,1});
             D.press(i,1:numel(Digits(i,1)))=str2double(Digits(i,1));
             D.probeTargetPos(i,1)=NaN; %if no value, write out NaN
-            D.responseKey(i,1:numel(RTs{i,1}))=extractBetween(respList{i},'"','"')';
+            D.responseKey(i,1:numel(extractBetween(respList{i},'"','"')'))=extractBetween(respList{i},'"','"')';
             D.targetRespKey(i,1:numel(extractBetween(corAnsList{i},'"','"')'))=extractBetween(corAnsList{i},'"','"')';
             
             try %if there's no response to the trial, the below will error...
@@ -98,9 +107,8 @@ for i=1:size(D.RT,1) %for trials, adding data as it goes
             D.error(i,:)=D.response(i,:) ~= D.press(i,:);
         end%try sequence
     end%if not empty
-    
-    
 end%for trials
+
 
 %%% Clean-up:
 % Remove rows without trial response data
@@ -133,15 +141,75 @@ cond=2;
 D.RT(D.trialType==cond,2:4)=NaN;
 D.press(D.trialType==cond,2:4)=NaN;
 D.error(D.trialType==cond,2:4)=NaN;
+D.responseKey(D.trialType == 2,2:4) = {[]};
+D.targetRespKey(D.trialType == 2,2:4) = {[]};
+D.response = D.responseKey;
 
-% Determine the target sequence
-targetSequence = NaN(2,4);
-D.targetSeq = NaN(size(D.press,1),maxpress);
-for i=1:2%for two sequences
-    targetSequence(i,:) = unique(D.press(D.fractal == i & D.trialType == 1,:),'stable')';
-    D.targetSeq(D.fractal == i,:) = repmat(targetSequence(i,:),length(D.press(D.fractal == i)),1);
+%define response from responseKey (due to issues in how response is defined
+%in psychopy
+for t = 1:size(D.response,1)
+    if  D.fractal(t) == 1
+        try
+            for i = 1:maxpress
+                D.response(t,i) = replace(D.response(t,i), 'y','1');
+                D.response(t,i) = replace(D.response(t,i), 'u','2');
+                D.response(t,i) = replace(D.response(t,i), 'i','3');
+                D.response(t,i) = replace(D.response(t,i), 'l','4');
+                D.response(t,i) = replace(D.response(t,i), 'r','5');
+                D.response(t,i) = replace(D.response(t,i), 'e','6');
+                D.response(t,i) = replace(D.response(t,i), 'w','7');
+                D.response(t,i) = replace(D.response(t,i), 'a','8');
+            end
+        catch
+            %             D.response{t,i:end}  = NaN;
+        end
+    elseif D.fractal(t) == 2
+        try
+            for i = 1:maxpress
+                D.response(t,i) = replace(D.response(t,i), 'r','1');
+                D.response(t,i) = replace(D.response(t,i), 'e','2');
+                D.response(t,i) = replace(D.response(t,i), 'w','3');
+                D.response(t,i) = replace(D.response(t,i), 'a','4');
+                D.response(t,i) = replace(D.response(t,i), 'y','5');
+                D.response(t,i) = replace(D.response(t,i), 'u','6');
+                D.response(t,i) = replace(D.response(t,i), 'i','7');
+                D.response(t,i) = replace(D.response(t,i), 'l','8');
+            end
+        catch
+            %             D.response{t,i:end}  = NaN;
+        end
+    end
 end
 
+%define errors based on response equalling press
+D.response = str2double(D.response);
+nanresponse = isnan(D.response); nanpress = isnan(D.press);
+D.error = D.response == D.press | nanresponse & nanpress;
+D.error = ~D.error;
+D.errorSum = sum(D.error,2);
+D.errorTrial = D.errorSum ~= 0;
 
+%define probe target position (due to mistake in some condition files)
+fingerPairs = {'y' 'u' 'i' 'l'; 'r' 'e' 'w' 'a'}; %pairs index with index, middle with middle, etc.
+
+for i=1:2%for nseq
+    for j=1:maxpress%for each press
+        
+        [~, idx, ~] = find(contains(fingerPairs,corrKeys{i,j})); %find respective press on other hand
+        if i==1
+            corrKeys{i,j+4} = fingerPairs{i+1,idx}; %add to corrKeys as indexes 5-8
+        elseif i==2
+            corrKeys{i,j+4} = fingerPairs{i-1,idx}; %add to corrKeys as indexes 5-8
+        end
+    end%for nseq
+end%for each press
+
+for i=1:length(D.probeTargetPos)
+    if isnan(D.probeTargetPos(i))
+        continue
+    end
+    
+    [~, D.probeTargetPos(i), ~] = find(contains(corrKeys(D.fractal(i),:),D.targetRespKey{i,1}));
+end
 
 disp(D)
