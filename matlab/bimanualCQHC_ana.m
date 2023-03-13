@@ -8,25 +8,25 @@ function bimanualCQHC_ana(which) %wrapper code
 % Paths to toolboxes and experimental code
 %
 %%%% CHBH RY PC
-% addpath(genpath('Z:\toolboxes\userfun'));%Joern Diedrichsen's util toolbox
-% addpath(genpath('Z:\toolboxes\RainCloudPlots-master')); %raincloud plot toolbox
-% addpath(genpath('C:\Users\yewbreyr\OneDrive\Documents\University\PhD\3rd Year\bimanualCQ_HC\CQHC\matlab'));%experimental code
+% addpath(genpath('Z:/toolboxes/userfun'));%Joern Diedrichsen's util toolbox
+% addpath(genpath('Z:/toolboxes/RainCloudPlots-master')); %raincloud plot toolbox
+% addpath(genpath('C:/Users/yewbreyr/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC/CQHC/matlab'));%experimental code
 %
 %%%% Home RY PC
-% addpath(genpath('E:\projects\toolboxes'));%toolboxes
-% addpath(genpath('C:\Users\bugsy\OneDrive\Documents\University\PhD\3rd Year\bimanualCQ_HC\CQHC\matlab'));%experimental code
+% addpath(genpath('E:/projects/toolboxes'));%toolboxes
+% addpath(genpath('C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC/CQHC/matlab'));%experimental code
 
 %%%% CHBH RY PC
-baseDir= 'C:\Users\yewbreyr\OneDrive\Documents\University\PhD\3rd Year\bimanualCQ_HC';
+% baseDir= 'C:/Users/yewbreyr/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
 
 %%%% Home RY PC
-% baseDir= 'C:\Users\bugsy\OneDrive\Documents\University\PhD\3rd Year\bimanualCQ_HC';
+baseDir= 'C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
 
 %Directory where psychoPy saves to
-rawDir= [baseDir '\bimanualCQ_HC2\data'];
+rawDir= [baseDir '/bimanualCQ_HC2/data'];
 
 %Directory where processed data should be saved
-saveDir= [baseDir '\CQHC\data'];
+saveDir= [baseDir '/CQHC/data'];
 
 
 %Analysis Cases - switch as function input
@@ -53,7 +53,7 @@ switch which
             S=[];
         end%for subj
         filename='cqHC_dataAll';
-        save([saveDir '\' filename], 'A')
+        save(fullfile(saveDir, filename), 'A')
         
     case 'loadDemographics'
         cd(saveDir)
