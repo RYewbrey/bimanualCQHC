@@ -107,20 +107,20 @@ switch ana
         end
         
         A.outliersRemoved = [];
-
-for i = 1:length(A.subject(:,1))
-    if A.subject(i)==33 ||  A.subject(i)==31 ||  A.subject(i)==30 ...
-            ||  A.subject(i)==26 ||  A.subject(i)==28 || A.subject(i)==1 ...
-        || A.subject(i)==2 || A.subject(i)==3 || A.subject(i)==6 ...
-        || A.subject(i)==12 || A.subject(i)==14 || A.subject(i)==8  
-    placeHolder(i)=0;
-    else
-        placeHolder(i)=1;
-    end
-    A.outliersRemoved(i)=placeHolder(i);
-end
-      A.outliersRemoved=A.outliersRemoved';
-      
+        
+        for i = 1:length(A.subject(:,1))
+            if A.subject(i)==33 ||  A.subject(i)==31 ||  A.subject(i)==30 ...
+                    ||  A.subject(i)==26 ||  A.subject(i)==28 || A.subject(i)==1 ...
+                    || A.subject(i)==2 || A.subject(i)==3 || A.subject(i)==6 ...
+                    || A.subject(i)==12 || A.subject(i)==14 || A.subject(i)==8
+                placeHolder(i)=0;
+            else
+                placeHolder(i)=1;
+            end
+            A.outliersRemoved(i)=placeHolder(i);
+        end
+        A.outliersRemoved=A.outliersRemoved';
+        
         filename='cqDyspraxia_dataAll.mat';
         save(filename, 'A')
         
@@ -131,69 +131,69 @@ end
         filename='cqDyspraxia_dataAll.mat';
         load(filename,'A') %load A
         
-                % sequence trials number of correct presses. 4 = sequence all
+        % sequence trials number of correct presses. 4 = sequence all
         % correct, 3 = 1 incorrect, 2 = 2 incorrect, 1 = 3 incorrect
         
-                A.NumErrorpress=zeros(length(A.ErrorSum),1);
+        A.NumErrorpress=zeros(length(A.ErrorSum),1);
         
         for i=1:length(A.ErrorSum)
-           if A.ErrorSum(i)==4
-               A.NumErrorpress(i)=0;
-           elseif A.ErrorSum(i)==3
-               A.NumErrorpress(i)=1;
-           elseif A.ErrorSum(i)==2
-               A.NumErrorpress(i)=2;
-           elseif A.ErrorSum(i)==1
-               A.NumErrorpress(i)=3;
-           elseif A.ErrorSum(i)==0
-               A.NumErrorpress(i)=4;
-           end
+            if A.ErrorSum(i)==4
+                A.NumErrorpress(i)=0;
+            elseif A.ErrorSum(i)==3
+                A.NumErrorpress(i)=1;
+            elseif A.ErrorSum(i)==2
+                A.NumErrorpress(i)=2;
+            elseif A.ErrorSum(i)==1
+                A.NumErrorpress(i)=3;
+            elseif A.ErrorSum(i)==0
+                A.NumErrorpress(i)=4;
+            end
         end
         
         M=tapply(A,{'subject','group'},{A.NumErrorpress,'sum','name','pressError'},'subset',A.day==3&A.trialType==3&A.TN>20);
         
-                figure;
-                scatterplot(M.subject(M.group==1),M.pressError(M.group==1),...
-'leg','auto')
-title ('Press error for seqeunce Trials (DCD)');
-% ylabel('Percentage of Errors(%)');
-xlabel('Participant')
-
         figure;
-                scatterplot(M.subject(M.group==2),M.pressError(M.group==2),...
-'leg','auto')
-title ('Press error for seqeunce Trials (Control)');
-% ylabel('Percentage of Errors(%)');
-xlabel('Participant')
-
-% percentage of errors for sequence trials
-M.percentage =[];
- subjectID=unique((M.subject));
+        scatterplot(M.subject(M.group==1),M.pressError(M.group==1),...
+            'leg','auto')
+        title ('Press error for seqeunce Trials (DCD)');
+        % ylabel('Percentage of Errors(%)');
+        xlabel('Participant')
+        
+        figure;
+        scatterplot(M.subject(M.group==2),M.pressError(M.group==2),...
+            'leg','auto')
+        title ('Press error for seqeunce Trials (Control)');
+        % ylabel('Percentage of Errors(%)');
+        xlabel('Participant')
+        
+        % percentage of errors for sequence trials
+        M.percentage =[];
+        subjectID=unique((M.subject));
         for subj=1:length(subjectID)
             catHolder=M.pressError(M.subject==subjectID(subj))./560;
             M.percentage = [M.percentage; catHolder];
         end
         M.percentage=M.percentage*100;
-
-
-figure;
-                scatterplot(M.subject(M.group==1),M.percentage(M.group==1),...
-'leg','fill')
-title ('Press error for seqeunce Trials (DCD)');
-ylabel('Percentage of Errors(%)');
-xlabel('Participant')
-drawline(20,'dir','horz','color',[0 0 0],'linestyle','-')
-% xticklabels({'1', '2','3','4','5','6','7','8','9','10','11'});
-% legend('DCD','Control')
-
-figure;
-                scatterplot(M.subject(M.group==2),M.percentage(M.group==2),...
-'leg','auto')
-title ('Press error for seqeunce Trials (Control)');
-ylabel('Percentage of Errors(%)');
-xlabel('Participant')
-drawline(20,'dir','horz','color',[0 0 0],'linestyle','-')
-       
+        
+        
+        figure;
+        scatterplot(M.subject(M.group==1),M.percentage(M.group==1),...
+            'leg','fill')
+        title ('Press error for seqeunce Trials (DCD)');
+        ylabel('Percentage of Errors(%)');
+        xlabel('Participant')
+        drawline(20,'dir','horz','color',[0 0 0],'linestyle','-')
+        % xticklabels({'1', '2','3','4','5','6','7','8','9','10','11'});
+        % legend('DCD','Control')
+        
+        figure;
+        scatterplot(M.subject(M.group==2),M.percentage(M.group==2),...
+            'leg','auto')
+        title ('Press error for seqeunce Trials (Control)');
+        ylabel('Percentage of Errors(%)');
+        xlabel('Participant')
+        drawline(20,'dir','horz','color',[0 0 0],'linestyle','-')
+        
         % participants need to have >14 of the probe trials correct to be
         % included in the analysis
         % 29 probe trials for each position
@@ -214,7 +214,7 @@ drawline(20,'dir','horz','color',[0 0 0],'linestyle','-')
         title ('Errors (Control)');
         ylabel('Number of errors');
         drawline(14,'dir','horz','color',[0 0 0],'linestyle','-')
-      
+        
         % participants to include and exclude, 26 control excluded based on
         % probe trials.
         
@@ -222,130 +222,130 @@ drawline(20,'dir','horz','color',[0 0 0],'linestyle','-')
         
     case 'outliersMem'
         
-          cd(rawDir);
+        cd(rawDir);
         filename='cqDyspraxia_dataAll.mat';
         load(filename,'A') %load A
         A.NumError=zeros(length(A.ErrorTrial),1);
         
         for i=1:length(A.ErrorTrial)
-           if A.ErrorTrial(i)==1
-               A.NumError(i)=0;
-           else 
-               A.NumError(i)=1;
-           end
+            if A.ErrorTrial(i)==1
+                A.NumError(i)=0;
+            else
+                A.NumError(i)=1;
+            end
         end
-                
+        
         % sequence trials on day 3
         G=tapply(A,{'subject','group'},{A.NumError,'sum','name','MemError'},'subset',A.day==2&A.trialType==3);
         % sequence trials overall
-%         G=tapply(A,{'subject','group'},{A.NumError,'sum','name','MemError'},'subset',A.trialType==3);
+        %         G=tapply(A,{'subject','group'},{A.NumError,'sum','name','MemError'},'subset',A.trialType==3);
         
         figure;
-                scatterplot(G.subject(G.group==1),G.MemError(G.group==1),...
-'leg','auto')
-title ('Error for seqeunce Trials (DCD)');
-% ylabel('Percentage of Errors(%)');
-xlabel('Participant')
-
-        figure;
-                scatterplot(G.subject(G.group==2),G.MemError(G.group==2),...
-'leg','auto')
-title ('Error for seqeunce Trials (Control)');
-% ylabel('Percentage of Errors(%)');
-xlabel('Participant')
+        scatterplot(G.subject(G.group==1),G.MemError(G.group==1),...
+            'leg','auto')
+        title ('Error for seqeunce Trials (DCD)');
+        % ylabel('Percentage of Errors(%)');
+        xlabel('Participant')
         
-% percentage of errors for sequence trials
-G.percentage =[];
- subjectID=unique((G.subject));
+        figure;
+        scatterplot(G.subject(G.group==2),G.MemError(G.group==2),...
+            'leg','auto')
+        title ('Error for seqeunce Trials (Control)');
+        % ylabel('Percentage of Errors(%)');
+        xlabel('Participant')
+        
+        % percentage of errors for sequence trials
+        G.percentage =[];
+        subjectID=unique((G.subject));
         for subj=1:length(subjectID)
             catHolder=G.MemError(G.subject==subjectID(subj))./160; %140 for day 3
             G.percentage = [G.percentage; catHolder];
         end
         G.percentage=G.percentage*100;
-
-
-figure;
-                scatterplot(G.subject(G.group==1),G.percentage(G.group==1),...
-'leg','fill')
-title ('Error for seqeunce Trials (DCD)');
-ylabel('Percentage of Errors(%)');
-xlabel('Participant')
-drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
-% xticklabels({'1', '2','3','4','5','6','7','8','9','10','11'});
-% legend('DCD','Control')
-
-figure;
-                scatterplot(G.subject(G.group==2),G.percentage(G.group==2),...
-'leg','auto')
-title ('Error for seqeunce Trials (Control)');
-ylabel('Percentage of Errors(%)');
-xlabel('Participant')
-drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
-
-% Make a variable of subjects without the outliers - logical with the
-% subjects to exclude. 
-% 33, 31, 30, 26, 28
-
+        
+        
+        figure;
+        scatterplot(G.subject(G.group==1),G.percentage(G.group==1),...
+            'leg','fill')
+        title ('Error for seqeunce Trials (DCD)');
+        ylabel('Percentage of Errors(%)');
+        xlabel('Participant')
+        drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
+        % xticklabels({'1', '2','3','4','5','6','7','8','9','10','11'});
+        % legend('DCD','Control')
+        
+        figure;
+        scatterplot(G.subject(G.group==2),G.percentage(G.group==2),...
+            'leg','auto')
+        title ('Error for seqeunce Trials (Control)');
+        ylabel('Percentage of Errors(%)');
+        xlabel('Participant')
+        drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
+        
+        % Make a variable of subjects without the outliers - logical with the
+        % subjects to exclude.
+        % 33, 31, 30, 26, 28
+        
         % instructed trials
         
         J=tapply(A,{'group','subject'},{A.NumError(:,1),'sum','name','InstructedError'},'subset',A.trialType==1);
         
         figure;
-                scatterplot(J.subject(J.group==1),J.InstructedError(J.group==1),...
-'leg','auto')
-title ('Error for instructed Trials (DCD)');
-ylabel('Number of Errors');
-xlabel('DCD')
-
+        scatterplot(J.subject(J.group==1),J.InstructedError(J.group==1),...
+            'leg','auto')
+        title ('Error for instructed Trials (DCD)');
+        ylabel('Number of Errors');
+        xlabel('DCD')
+        
         figure;
-                scatterplot(J.subject(J.group==2),J.InstructedError(J.group==2),...
-'leg','auto')
-title ('Error for instructed Trials (Control)');
-ylabel('Number of Errors');
-xlabel('control')
-
-% percentage of errors for Instructed trials
-J.percentage =[];
- subjectID=unique((J.subject));
+        scatterplot(J.subject(J.group==2),J.InstructedError(J.group==2),...
+            'leg','auto')
+        title ('Error for instructed Trials (Control)');
+        ylabel('Number of Errors');
+        xlabel('control')
+        
+        % percentage of errors for Instructed trials
+        J.percentage =[];
+        subjectID=unique((J.subject));
         for subj=1:length(subjectID)
             catHolder=J.InstructedError(J.subject==subjectID(subj))./160;
             J.percentage = [J.percentage; catHolder];
         end
         J.percentage=J.percentage*100;
-
-
-figure;
-                scatterplot(J.subject(J.group==1),J.percentage(J.group==1),...
-'leg','fill')
-title ('Error for instructed Trials (DCD)');
-ylabel('Percentage of Errors(%)');
-xlabel('Participant')
-ylim([0 100]);
-drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
-
-% xticklabels({'1', '2','3','4','5','6','7','8','9','10','11'});
-% legend('DCD','Control')
-
-figure;
-                scatterplot(J.subject(J.group==2),J.percentage(J.group==2),...
-'leg','auto')
-title ('Error for instructed Trials (Control)');
-ylabel('Percentage of Errors(%)');
-xlabel('Participant')
-ylim([0 100]);
-drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
-
-% 4, 5, 7, 9 (keep) DCD, 12, 14 control get rid
-
+        
+        
+        figure;
+        scatterplot(J.subject(J.group==1),J.percentage(J.group==1),...
+            'leg','fill')
+        title ('Error for instructed Trials (DCD)');
+        ylabel('Percentage of Errors(%)');
+        xlabel('Participant')
+        ylim([0 100]);
+        drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
+        
+        % xticklabels({'1', '2','3','4','5','6','7','8','9','10','11'});
+        % legend('DCD','Control')
+        
+        figure;
+        scatterplot(J.subject(J.group==2),J.percentage(J.group==2),...
+            'leg','auto')
+        title ('Error for instructed Trials (Control)');
+        ylabel('Percentage of Errors(%)');
+        xlabel('Participant')
+        ylim([0 100]);
+        drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
+        
+        % 4, 5, 7, 9 (keep) DCD, 12, 14 control get rid
+        
     case 'plot'  %% Extract RT, errors per condition and plot
         cd(rawDir);
         filename='cqDyspraxia_dataAll.mat';
         load(filename,'A') %load A
-                T=tapply(A,{'subject'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20);
+        T=tapply(A,{'subject'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20);
         V=tapply(A,{'subject'},{A.RT(:,1),'std','name','probeRTstd'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20);
         
-      
-          fieldnames = fields(A);
+        
+        fieldnames = fields(A);
         
         for i=1:numel(fieldnames)
             B.(fieldnames{i}) = A.(fieldnames{i})(A.trialType==2&A.points>0&A.day==3&A.TN>20);
@@ -357,8 +357,8 @@ drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
             catHolder=A.RT(A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject==subj)>(T.probeRTmedian(subj,1)+3*(V.probeRTstd(subj,1)));
             B.outlier = [B.outlier; catHolder];
         end
-                
-                  fieldnames = fields(A);
+        
+        fieldnames = fields(A);
         
         for i=1:numel(fieldnames)
             B.(fieldnames{i})(B.outlier==1) = [];
@@ -382,13 +382,13 @@ drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
         end
         
         %         empty_matrix = zeros([4,(length(A.RT)/4])
-%         for i=1:length(A.RT)
-%             
-%             disp(A.RT(i));
-%             
-%             
-%         end
-%         
+        %         for i=1:length(A.RT)
+        %
+        %             disp(A.RT(i));
+        %
+        %
+        %         end
+        %
         
         %         x = [1 2 3 4];
         
@@ -404,48 +404,48 @@ drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
                 A.probenoutliers1 = [A.probenoutliers1; a];
                 A.outliers1 = [A.outliers1; b];
                 
-               [a, b] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==2&A.day==3&A.points>0),'mean');
+                [a, b] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==2&A.day==3&A.points>0),'mean');
                 A.probenoutliers2 = [A.probenoutliers2; a];
                 A.outliers2 = [A.outliers2; b];
                 
-                 [a, b] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==3&A.day==3&A.points>0),'mean');
+                [a, b] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==3&A.day==3&A.points>0),'mean');
                 A.probenoutliers3 = [A.probenoutliers3; a];
                 A.outliers3 = [A.outliers3; b];
                 
-                 [a, b] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==4&A.day==3&A.points>0),'mean');
+                [a, b] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==4&A.day==3&A.points>0),'mean');
                 A.probenoutliers4 = [A.probenoutliers4; a];
                 A.outliers4 = [A.outliers4; b];
                 
-%                 [probenoutliers2(end+1),outliers2(end+1)] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==2&A.day==3&A.points>0),'mean');
-%                 [probenoutliers3(end+1),outliers3(end+1)] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==3&A.day==3&A.points>0),'mean');
-%                 [probenoutliers4(end+1),outliers4(end+1)] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==4&A.day==3&A.points>0),'mean');
-%                 %         x = [1 2 3 4];
+                %                 [probenoutliers2(end+1),outliers2(end+1)] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==2&A.day==3&A.points>0),'mean');
+                %                 [probenoutliers3(end+1),outliers3(end+1)] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==3&A.day==3&A.points>0),'mean');
+                %                 [probenoutliers4(end+1),outliers4(end+1)] = rmoutliers(A.RT(A.subject==i&A.probeTargetPos==4&A.day==3&A.points>0),'mean');
+                %                 %         x = [1 2 3 4];
                 
                 
             end
         end
-
+        
         
         %         Raincloud plot
         colPos=[0.5 0.8 0.9; 1 0.7 1; 0.7 0.8 0.9; 0.6 0.8 0.5];
         
         fig_position = [200 200 600 400]; % coordinates for figures
-%         figure;
-%         for i=1:4
-%             RTpos=B.RT(B.subject==10& B.probeTargetPos==i);
-%             subplot(1,4,i);
-%             raincloud_plot(RTpos,'color',colPos(i,:));
-%             ax = gca;
-%             
-%              xlim([0.1 0.7]);
-%             %             ylim([-5 5]);
-%             camroll(+90)
-%             title(['ProbePos' num2str(i)]);
-%             
-%         end
+        %         figure;
+        %         for i=1:4
+        %             RTpos=B.RT(B.subject==10& B.probeTargetPos==i);
+        %             subplot(1,4,i);
+        %             raincloud_plot(RTpos,'color',colPos(i,:));
+        %             ax = gca;
+        %
+        %              xlim([0.1 0.7]);
+        %             %             ylim([-5 5]);
+        %             camroll(+90)
+        %             title(['ProbePos' num2str(i)]);
+        %
+        %         end
         
-%         figure;
-%         RTpos = []
+        %         figure;
+        %         RTpos = []
         
         
         %
@@ -475,19 +475,19 @@ drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
         loopcounter=1;
         figure;
         RTpos=[];
-         subjectID=unique((A.subject(A.group==1)));
-         
+        subjectID=unique((A.subject(A.group==1)));
+        
         for j=3:length(subjectID)
             for i=1:4
-                  RTpos=A.RT(A.subject==j&A.trialType==3&A.points>0&A.day==3&A.TN>20,i);
-%                 RTpos=B.RT(B.subject==j, i);
+                RTpos=A.RT(A.subject==j&A.trialType==3&A.points>0&A.day==3&A.TN>20,i);
+                %                 RTpos=B.RT(B.subject==j, i);
                 % A.group==3
                 subplot(2,4,loopcounter)
                 raincloud_plot(RTpos,'color',colPos(i,:));
                 ax = gca;
                 
-                 xlim([0 3.5]);
-%                   ylim([0 7]);
+                xlim([0 3.5]);
+                %                   ylim([0 7]);
                 camroll(+90)
                 title(['Sequence Timing (DCD)']);
                 hold on;
@@ -495,22 +495,22 @@ drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
             loopcounter=loopcounter+1;
         end
         
-                loopcounter=1;
+        loopcounter=1;
         figure;
         RTpos=[];
         
         subjectID=unique((A.subject(A.group==2)));
         for j=10:subjectID(end)
             for i=1:4
-                  RTpos=A.RT(A.subject==j&A.trialType==3&A.points>0&A.day==3&A.TN>20,i);
-%                 RTpos=B.RT(B.subject==j, i);
+                RTpos=A.RT(A.subject==j&A.trialType==3&A.points>0&A.day==3&A.TN>20,i);
+                %                 RTpos=B.RT(B.subject==j, i);
                 % A.group==3
                 subplot(2,4,loopcounter)
                 raincloud_plot(RTpos,'color',colPos(i,:));
                 ax = gca;
                 
-                 xlim([0 3.5]);
-%                   ylim([0 7]);
+                xlim([0 3.5]);
+                %                   ylim([0 7]);
                 camroll(+90)
                 title(['Sequence Timing (Control)']);
                 hold on;
@@ -518,40 +518,40 @@ drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
             loopcounter=loopcounter+1;
         end
         loopcounter=1;
-%     subjectID=unique((A.subject));        
-figure;    
+        %     subjectID=unique((A.subject));
+        figure;
         for j=7
             for i=1:4
-                  RTpos=A.RT(A.subject==j&A.trialType==3&A.points>0&A.day==3&A.TN>20 ,i);
-%                 RTpos=B.RT(B.subject==j, i);
+                RTpos=A.RT(A.subject==j&A.trialType==3&A.points>0&A.day==3&A.TN>20 ,i);
+                %                 RTpos=B.RT(B.subject==j, i);
                 % A.group==3
                 subplot(1,1,loopcounter)
                 raincloud_plot(RTpos,'color',colPos(i,:));
                 ax = gca;
                 
-%                  xlim([0 4]);
-%                   ylim([0 7]);
+                %                  xlim([0 4]);
+                %                   ylim([0 7]);
                 camroll(+90)
                 title(['Sequence Timing']);
                 hold on;
             end
             loopcounter=loopcounter+1;
         end
-%         figure;
-%         RTPos=[];
-%         for i=1:4
-%             RTPos=A.RT(A.day==3&A.subject==9&A.trialType==3&A.points>0, i);
-%             subplot(1,2,1)
-%             raincloud_plot(RTPos, 'color',colPos(i,:));
-%             ax = gca;
-%             
-%             xlim([0 3.3]);
-%             ylim([0 5]);
-%             camroll(+90)
-%             title(['Sequence Timing']);
-%             hold on;
-%         end
-%         
+        %         figure;
+        %         RTPos=[];
+        %         for i=1:4
+        %             RTPos=A.RT(A.day==3&A.subject==9&A.trialType==3&A.points>0, i);
+        %             subplot(1,2,1)
+        %             raincloud_plot(RTPos, 'color',colPos(i,:));
+        %             ax = gca;
+        %
+        %             xlim([0 3.3]);
+        %             ylim([0 5]);
+        %             camroll(+90)
+        %             title(['Sequence Timing']);
+        %             hold on;
+        %         end
+        %
         
         %
         % figure;
@@ -571,43 +571,43 @@ figure;
         %     hold on;
         % end
         
-%         figure;
-%         for i=1:4
-%             Prod=A.firstKeyRT(A.group==3&A.trialType==2 & A.points>0 & A.probeTargetPos==i);
-%             subplot(1,4,i);
-%             raincloud_plot(Prod,'color',colPos(i,:));
-%             ax = gca;
-%             
-%             xlim([0.1 1.6]);
-%             %             camroll(+90)
-%             title(['ProbeProd' num2str(i)]);
-%         end
-%         
-%         figure;
-%         
-%         
-%         for i=1:4
-%             for j=1:4
-%                 prod=A.RT(A.group==3&A.trialType==3 & A.points>0 & A.press(:,j)==i);
-%                 subplot(1,4,j)
-%                 if isempty(prod) == 0
-%                     raincloud_plot(prod,'color',colPos(i,:),'alpha', 0.25);
-%                     %             raincloud_plot(prod,'color',colPos(i,:));
-%                     
-%                     %             legend([h1{prod} h2{prod2} h3{prod3} h4{prod4}], {'1','2','3','4'});
-%                     fig = gcf;
-%                     ax = fig.CurrentAxes;
-%                     %                          ax = gca;
-%                     
-%                     set(gca, 'XLim', [0 3]);
-%                     %             set(gca, 'YLim', [0 3]);
-%                     xlim([0 3]);
-%                     %             camroll(+90)
-%                     title(['press' num2str(i)]);
-%                     
-%                 end
-%             end
-%         end
+        %         figure;
+        %         for i=1:4
+        %             Prod=A.firstKeyRT(A.group==3&A.trialType==2 & A.points>0 & A.probeTargetPos==i);
+        %             subplot(1,4,i);
+        %             raincloud_plot(Prod,'color',colPos(i,:));
+        %             ax = gca;
+        %
+        %             xlim([0.1 1.6]);
+        %             %             camroll(+90)
+        %             title(['ProbeProd' num2str(i)]);
+        %         end
+        %
+        %         figure;
+        %
+        %
+        %         for i=1:4
+        %             for j=1:4
+        %                 prod=A.RT(A.group==3&A.trialType==3 & A.points>0 & A.press(:,j)==i);
+        %                 subplot(1,4,j)
+        %                 if isempty(prod) == 0
+        %                     raincloud_plot(prod,'color',colPos(i,:),'alpha', 0.25);
+        %                     %             raincloud_plot(prod,'color',colPos(i,:));
+        %
+        %                     %             legend([h1{prod} h2{prod2} h3{prod3} h4{prod4}], {'1','2','3','4'});
+        %                     fig = gcf;
+        %                     ax = fig.CurrentAxes;
+        %                     %                          ax = gca;
+        %
+        %                     set(gca, 'XLim', [0 3]);
+        %                     %             set(gca, 'YLim', [0 3]);
+        %                     xlim([0 3]);
+        %                     %             camroll(+90)
+        %                     title(['press' num2str(i)]);
+        %
+        %                 end
+        %             end
+        %         end
         
         
         %         T.subject~=4&T.subject~=5
@@ -622,8 +622,8 @@ figure;
         T=tapply(A,{'subject'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20);
         V=tapply(A,{'subject'},{A.RT(:,1),'std','name','probeRTstd'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20);
         
-      
-          fieldnames = fields(A);
+        
+        fieldnames = fields(A);
         
         for i=1:numel(fieldnames)
             B.(fieldnames{i}) = A.(fieldnames{i})(A.trialType==2&A.points>0&A.day==3&A.TN>20);
@@ -635,8 +635,8 @@ figure;
             catHolder=A.RT(A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject==subj)>(T.probeRTmedian(subj,1)+3*(V.probeRTstd(subj,1)));
             B.outlier = [B.outlier; catHolder];
         end
-                
-                  fieldnames = fields(A);
+        
+        fieldnames = fields(A);
         
         for i=1:numel(fieldnames)
             B.(fieldnames{i})(B.outlier==1) = [];
@@ -645,11 +645,11 @@ figure;
         % Outliers removed, those who did not complete enough instructed
         % trials
         % B.subject~=1&B.subject~=2&
-%         Q=tapply(A,{'group','subject','probeTargetPos'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject~=26&A.subject~=27&A.subject~=28&A.subject~=29&A.subject~=30&A.subject~=31&A.subject~=33&A.subject~=34&A.subject~=16&A.subject~=19&A.subject~=4);
+        %         Q=tapply(A,{'group','subject','probeTargetPos'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject~=26&A.subject~=27&A.subject~=28&A.subject~=29&A.subject~=30&A.subject~=31&A.subject~=33&A.subject~=34&A.subject~=16&A.subject~=19&A.subject~=4);
         Q=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=16&B.subject~=19&B.subject~=34);%all participants removed who didn't understand the task
-         Q=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=34&B.subject~=7&B.subject~=11&B.subject~=2); %participants removed who have ADHD
-%         Q=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=33&B.subject~=2); % not enough instructed trials completed       
-         Q=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=34&B.subject~=2&B.subject~=16&B.subject~=28&B.subject~=30&B.subject~=21&B.subject~=22&B.subject~=25&B.subject~=3&B.subject~=4&B.subject~=7&B.subject~=8); % not enough sequence trials
+        Q=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=34&B.subject~=7&B.subject~=11&B.subject~=2); %participants removed who have ADHD
+        %         Q=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=33&B.subject~=2); % not enough instructed trials completed
+        Q=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=34&B.subject~=2&B.subject~=16&B.subject~=28&B.subject~=30&B.subject~=21&B.subject~=22&B.subject~=25&B.subject~=3&B.subject~=4&B.subject~=7&B.subject~=8); % not enough sequence trials
         Q.probeRTrel=nan(size(Q.subject,1),1);
         
         subjectID=unique((Q.subject));
@@ -660,14 +660,14 @@ figure;
         
         % Relative RT graph for DCD
         figure;
-%         subplot(1,13,subjectID);
+        %         subplot(1,13,subjectID);
         lineplot(Q.probeTargetPos(Q.group==1), Q.probeRTrel(Q.group==1),'split',Q.subject(Q.group==1),'style_thickline','leg','auto');
         title('RT subject(DCD)');
         ylabel('RT increase(%)');
-         legend('3','4','5','8','10');
-%         legend('2','3','4','5','8','10','11','19','33'); % without ADHD
-%         legend('5','10'); % enough sequence trials
-%         ylim([-25 50])
+        legend('3','4','5','8','10');
+        %         legend('2','3','4','5','8','10','11','19','33'); % without ADHD
+        %         legend('5','10'); % enough sequence trials
+        %         ylim([-25 50])
         ylim([-5 50])
         
         figure;
@@ -677,20 +677,20 @@ figure;
         ylabel('RT increase(%)');
         legend('12','13','15','17','18','20','21','22','23','24','25','28','30','32');
         legend('12','13','15','17','18','20','23','24','32'); % enough sequence trials
-%         ylim([-25 50])
+        %         ylim([-25 50])
         ylim([-5 50])
         
-%         figure;
-%                 lineplot(Q.probeTargetPos(Q.group==2), Q.probeRTrel(Q.group==2),'split',Q.subject(Q.group==2),'style_thickline','leg','auto');
-%         title('RT subject(DCD)');
-%         ylabel('RT increase(%)');
-% %         legend('3','4','5','7','8','10','11');
-%         legend('19','34'); % without ADHD
-% %         legend('5','10'); % enough sequence trials
-%         % Relative RT graph split by group 
+        %         figure;
+        %                 lineplot(Q.probeTargetPos(Q.group==2), Q.probeRTrel(Q.group==2),'split',Q.subject(Q.group==2),'style_thickline','leg','auto');
+        %         title('RT subject(DCD)');
+        %         ylabel('RT increase(%)');
+        % %         legend('3','4','5','7','8','10','11');
+        %         legend('19','34'); % without ADHD
+        % %         legend('5','10'); % enough sequence trials
+        %         % Relative RT graph split by group
         
-         figure;
-%         subplot(1,33,subjectID);
+        figure;
+        %         subplot(1,33,subjectID);
         lineplot(Q.probeTargetPos, Q.probeRTrel,'split', Q.group,'style_thickline','leg','auto');
         title ('RT group');
         ylabel('RT increase(%)');
@@ -699,10 +699,10 @@ figure;
         % Outlier removed, those who did not get enough probe trials or
         % sequence trials correct
         
-          L=tapply(A,{'group','subject','probeTargetPos'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject~=1&A.subject~=2&A.subject~=3&A.subject~=4&A.subject~=6&A.subject~=7&A.subject~=8&A.subject~=9&A.subject~=14&A.subject~=16&A.subject~=26&A.subject~=27&A.subject~=28&A.subject~=29&A.subject~=30&A.subject~=31);
-          L=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=2&B.subject~=3&B.subject~=4&B.subject~=6&B.subject~=7&B.subject~=8&B.subject~=9&B.subject~=14&B.subject~=16&B.subject~=26&B.subject~=27&B.subject~=28&B.subject~=29&B.subject~=30&B.subject~=31&B.subject~=19&B.subject~=21&B.subject~=22&B.subject~=25&B.subject~=34&B.subject~=23&B.subject~=11&B.outliersRemoved==1);
-          
-          L.probeRTrel=nan(size(L.subject,1),1);
+        L=tapply(A,{'group','subject','probeTargetPos'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject~=1&A.subject~=2&A.subject~=3&A.subject~=4&A.subject~=6&A.subject~=7&A.subject~=8&A.subject~=9&A.subject~=14&A.subject~=16&A.subject~=26&A.subject~=27&A.subject~=28&A.subject~=29&A.subject~=30&A.subject~=31);
+        L=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=2&B.subject~=3&B.subject~=4&B.subject~=6&B.subject~=7&B.subject~=8&B.subject~=9&B.subject~=14&B.subject~=16&B.subject~=26&B.subject~=27&B.subject~=28&B.subject~=29&B.subject~=30&B.subject~=31&B.subject~=19&B.subject~=21&B.subject~=22&B.subject~=25&B.subject~=34&B.subject~=23&B.subject~=11&B.outliersRemoved==1);
+        
+        L.probeRTrel=nan(size(L.subject,1),1);
         
         subjectID=unique((L.subject));
         for subj=1:length(subjectID)
@@ -712,7 +712,7 @@ figure;
         
         % Relative RT graph for DCD
         figure;
-%         subplot(1,13,subjectID);
+        %         subplot(1,13,subjectID);
         lineplot(L.probeTargetPos(L.group==1), L.probeRTrel(L.group==1),'split',L.subject(L.group==1),'style_thickline','leg','auto');
         title('RT subject(DCD)');
         ylabel('RT increase(%)');
@@ -723,46 +723,46 @@ figure;
         lineplot(L.probeTargetPos(L.group==2), L.probeRTrel(L.group==2),'split',L.subject(L.group==2),'style_thickline','leg','auto');
         title('RT subject(Control)');
         ylabel('RT increase(%)');
-%         legend('4','5','6','7','8','9','10','11');
+        %         legend('4','5','6','7','8','9','10','11');
         
-        % Relative RT graph split by group 
-         figure;
-%         subplot(1,33,subjectID);
+        % Relative RT graph split by group
+        figure;
+        %         subplot(1,33,subjectID);
         lineplot(L.probeTargetPos, L.probeRTrel,'split', L.group,'style_thickline','leg','auto');
         title ('RT group');
         ylabel('RT increase(%)');
         legend('DCD','Control');
-%         G=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'});
+        %         G=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'});
         G=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.outliersRemoved==1);
-%         M=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.outliersRemoved==1);
+        %         M=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.outliersRemoved==1);
         
         
-%         A.outlier=...zeros(,)
-%         for... subj
-%                 A.outlier=A.RT(A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subj(..,),1)>(T.probeRTmedian(subj,1)+3*(T.probeRTstd(subj,1)));
-%         end
-%                 
+        %         A.outlier=...zeros(,)
+        %         for... subj
+        %                 A.outlier=A.RT(A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subj(..,),1)>(T.probeRTmedian(subj,1)+3*(T.probeRTstd(subj,1)));
+        %         end
+        %
         figure;
         subplot(1,1,1);
         lineplot(G.probeTargetPos, G.probeRTmedian*1000,'split',G.group,'style_thickline','leg','auto');
         title ('RT');
         ylabel('RT(ms)');
         legend('DCD', 'Control');
-
-
+        
+        
         figure;
         subplot(1,2,1);
         lineplot(G.probeTargetPos(G.group==1), G.probeRTmedian(G.group==1)*1000,'split', G.subject(G.group==1),'style_thickline','leg','auto');
         title (' RT (DCD)');
         ylabel('RT(ms)');
-%         ylim([350 800]);
+        %         ylim([350 800]);
         legend('1', '2','3 Flute','4','5','6','7','8','9','10','11');
         
         subplot(1,2,2);
         lineplot(G.probeTargetPos(G.group==2), G.probeRTmedian(G.group==2)*1000,'split', G.subject(G.group==2),'style_thickline','leg','auto');
         title (' RT (Control)');
         ylabel('RT(ms)');
-%         ylim([350 800]);
+        %         ylim([350 800]);
         legend('12', '13','14','15','16','17','18','19','20','21','22','23','24','25','26','27(outlier)','28','29','30','31','32','33');
         
         figure;
@@ -770,8 +770,8 @@ figure;
         lineplot(G.probeTargetPos, G.probeRTmedian*1000,'split', G.subject==33,'style_thickline','leg','auto');
         title (' RT (Control)');
         ylabel('RT(ms)');
-%         ylim([350 800]);
-%         legend('31','32','33');
+        %         ylim([350 800]);
+        %         legend('31','32','33');
         
         G.probeRTrel=nan(size(G.subject,1),1);
         
@@ -782,35 +782,35 @@ figure;
         end
         
         figure;
-%         subplot(1,13,subjectID);
+        %         subplot(1,13,subjectID);
         lineplot(G.probeTargetPos(G.group==1), G.probeRTrel(G.group==1),'split',G.subject(G.group==1),'style_thickline','leg','auto');
         title('RT subject(DCD)');
         ylabel('RT increase(%)');
         ylim([-5 30]);
-%         legend('1 Cello/Piano','2','3','4','5','6','7','8');
+        %         legend('1 Cello/Piano','2','3','4','5','6','7','8');
         legend('1 NoSeqProd','2 NoSeqProd','3','4 Grade7Piano','5','6','7 Grade4Flute','8','9');
-%         xticks([1 2]);
-%         xticklabels({'DCD', 'Control'});
-%         legend('DCD','Control')
-
+        %         xticks([1 2]);
+        %         xticklabels({'DCD', 'Control'});
+        %         legend('DCD','Control')
+        
         figure;
-%         subplot(1,13,subjectID);
+        %         subplot(1,13,subjectID);
         
         lineplot(G.probeTargetPos(G.group==2), G.probeRTrel(G.group==2),'split',G.subject(G.group==2),'style_thickline','leg','auto');
         title('RT subject(control)');
         ylabel('RT increase(%)');
-%         ylim([-10 35]);
+        %         ylim([-10 35]);
         legend('1 Cello/Piano','2','3','4','5','6','7','8');
-
+        
         figure;
-%         subplot(1,33,subjectID);
+        %         subplot(1,33,subjectID);
         lineplot(G.probeTargetPos, G.probeRTrel,'split', G.group,'style_thickline','leg','auto');
         title ('RT group');
         ylabel('RT increase(%)');
         legend('DCD','Control');
-%                 ylim([0 15]);
+        %                 ylim([0 15]);
         figure;
-%         subplot(1,13,subjectID);
+        %         subplot(1,13,subjectID);
         lineplot(G.probeTargetPos(G.subject==15), G.probeRTrel(G.subject==15),'style_thickline','leg','auto');
         title('RT subject');
         ylabel('RT increase(%)');
@@ -818,16 +818,16 @@ figure;
         % ylim([0,10]);
         set(gca,'Fontsize',16)
         
-         K=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'});
-         
-                K.probeRTrel=nan(size(K.subject,1),1);
+        K=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'});
         
-       
+        K.probeRTrel=nan(size(K.subject,1),1);
+        
+        
         for position=1:4
             RTbase=K.probeRTmedian&K.probeTargetPos==position;
             K.probeRTrel=(K.probeRTmedian/RTbase - 1)*100;
         end
-                figure;
+        figure;
         subplot(1,33,subjectID);
         lineplot(K.probeTargetPos, K.probeRTrel,'split',K.subject,'style_thickline','leg','auto');
         title('RT subject');
@@ -838,11 +838,11 @@ figure;
         filename='cqDyspraxia_dataAll.mat';
         load(filename,'A')
         
-                T=tapply(A,{'subject'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20);
+        T=tapply(A,{'subject'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20);
         V=tapply(A,{'subject'},{A.RT(:,1),'std','name','probeRTstd'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20);
         
-      
-          fieldnames = fields(A);
+        
+        fieldnames = fields(A);
         
         for i=1:numel(fieldnames)
             B.(fieldnames{i}) = A.(fieldnames{i})(A.trialType==2&A.points>0&A.day==3&A.TN>20);
@@ -854,28 +854,28 @@ figure;
             catHolder=A.RT(A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject==subj)>(T.probeRTmedian(subj,1)+3*(V.probeRTstd(subj,1)));
             B.outlier = [B.outlier; catHolder];
         end
-                
-                  fieldnames = fields(A);
+        
+        fieldnames = fields(A);
         
         for i=1:numel(fieldnames)
             B.(fieldnames{i})(B.outlier==1) = [];
         end
-
-%         for i=1:length(A.RT)
-%             
-%             disp(A.RT(i))
-%             
-%             
-%         end
-%         
-%                 A.ErrorTrial = 1 - A.ErrorTrial;
-%         T=tapply(B,{'group','subject','probeTargetPos'},{B.ErrorTrial(:,1),'sum','name','probeErrorSum'},'subset',B.subject~=1&B.subject~=2&B.subject~=3&B.subject~=4&B.subject~=6&B.subject~=7&B.subject~=8&B.subject~=9&B.subject~=14&B.subject~=16&B.subject~=26&B.subject~=27&B.subject~=28&B.subject~=29&B.subject~=30&B.subject~=31);
-         T=tapply(B,{'group','subject','probeTargetPos'},{B.ErrorTrial(:,1),'sum','name','probeErrorSum'},'subset',B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=16&B.subject~=19&B.subject~=34); % participants removed who didn't understand the task
-%          T=tapply(B,{'group','subject','probeTargetPos'},{B.ErrorTrial(:,1),'sum','name','probeErrorSum'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=16&B.subject~=19&B.subject~=33); % not enough instructed trials completed
-         T=tapply(B,{'group','subject','probeTargetPos'},{B.ErrorTrial(:,1),'sum','name','probeErrorSum'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=34&B.subject~=7&B.subject~=11); % participants removed that have ADHD
-%          T=tapply(B,{'group','subject','probeTargetPos'},{B.ErrorTrial(:,1),'sum','name','probeErrorSum'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=34&B.subject~=2&B.subject~=16&B.subject~=28&B.subject~=30&B.subject~=21&B.subject~=22&B.subject~=25&B.subject~=3&B.subject~=4&B.subject~=7&B.subject~=8); % not enough sequence trials
-%         B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=33&B.subject~=2&B.subject~=16&B.subject~=28&B.subject~=30&B.subject~=21&B.subject~=22&B.subject~=25&B.subject~=3&B.subject~=4&B.subject~=7&B.subject~=8
-%         L=tapply(A,{'group','subject','probeTargetPos'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject~=1&A.subject~=2&A.subject~=3&A.subject~=4&A.subject~=6&A.subject~=7&A.subject~=8&A.subject~=9&A.subject~=14&A.subject~=16&A.subject~=26&A.subject~=27&A.subject~=28&A.subject~=29&A.subject~=30&A.subject~=31);
+        
+        %         for i=1:length(A.RT)
+        %
+        %             disp(A.RT(i))
+        %
+        %
+        %         end
+        %
+        %                 A.ErrorTrial = 1 - A.ErrorTrial;
+        %         T=tapply(B,{'group','subject','probeTargetPos'},{B.ErrorTrial(:,1),'sum','name','probeErrorSum'},'subset',B.subject~=1&B.subject~=2&B.subject~=3&B.subject~=4&B.subject~=6&B.subject~=7&B.subject~=8&B.subject~=9&B.subject~=14&B.subject~=16&B.subject~=26&B.subject~=27&B.subject~=28&B.subject~=29&B.subject~=30&B.subject~=31);
+        T=tapply(B,{'group','subject','probeTargetPos'},{B.ErrorTrial(:,1),'sum','name','probeErrorSum'},'subset',B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=16&B.subject~=19&B.subject~=34); % participants removed who didn't understand the task
+        %          T=tapply(B,{'group','subject','probeTargetPos'},{B.ErrorTrial(:,1),'sum','name','probeErrorSum'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=16&B.subject~=19&B.subject~=33); % not enough instructed trials completed
+        T=tapply(B,{'group','subject','probeTargetPos'},{B.ErrorTrial(:,1),'sum','name','probeErrorSum'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=34&B.subject~=7&B.subject~=11); % participants removed that have ADHD
+        %          T=tapply(B,{'group','subject','probeTargetPos'},{B.ErrorTrial(:,1),'sum','name','probeErrorSum'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=34&B.subject~=2&B.subject~=16&B.subject~=28&B.subject~=30&B.subject~=21&B.subject~=22&B.subject~=25&B.subject~=3&B.subject~=4&B.subject~=7&B.subject~=8); % not enough sequence trials
+        %         B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=33&B.subject~=2&B.subject~=16&B.subject~=28&B.subject~=30&B.subject~=21&B.subject~=22&B.subject~=25&B.subject~=3&B.subject~=4&B.subject~=7&B.subject~=8
+        %         L=tapply(A,{'group','subject','probeTargetPos'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject~=1&A.subject~=2&A.subject~=3&A.subject~=4&A.subject~=6&A.subject~=7&A.subject~=8&A.subject~=9&A.subject~=14&A.subject~=16&A.subject~=26&A.subject~=27&A.subject~=28&A.subject~=29&A.subject~=30&A.subject~=31);
         
         T.rawError=29-T.probeErrorSum;
         figure;
@@ -900,7 +900,7 @@ figure;
         title ('Number of correct presses for probe trials');
         ylabel('Number of correct trials');
         
-            figure;
+        figure;
         subplot(1,3,1);
         lineplot(T.probeTargetPos(T.group==1), T.probeErrorSum(T.group==1),'split', T.subject(T.group==1),'style_thickline','leg','auto');
         title ('Number of correct presses for probe trials (DCD)');
@@ -932,44 +932,44 @@ figure;
                 T.probeErrorrel(infs) = 0;
             end
         end
-%         T.probeErrorrel = ((T.probeErrorrel*-1)-100)*-1;
-
-       T.probeErrorrel = (T.probeErrorrel*-1);
+        %         T.probeErrorrel = ((T.probeErrorrel*-1)-100)*-1;
+        
+        T.probeErrorrel = (T.probeErrorrel*-1);
         
         figure;
-%         subplot(1,34,subjectID);
+        %         subplot(1,34,subjectID);
         lineplot(T.probeTargetPos, T.probeErrorrel,'split', T.group,'style_thickline','leg','auto');
         title ('Relative Error');
         ylabel('Relative Error(%)');
         legend('DCD','Control');
         %         ylim([0 15]);
         
-         figure;
-%         subplot(1,2,1);
+        figure;
+        %         subplot(1,2,1);
         lineplot(T.probeTargetPos(T.group==1), T.probeErrorrel(T.group==1),'split', T.subject(T.group==1),'style_thickline','leg','auto');
         title ('Relative Error (DCD)');
         ylabel('Relative Error(%)');
-%         legend('1 NoSeqProd','2 NoSeqProd','3','4 Grade7Piano','5','6','7 Grade4Flute','8','9');
+        %         legend('1 NoSeqProd','2 NoSeqProd','3','4 Grade7Piano','5','6','7 Grade4Flute','8','9');
         legend('3','4','5','7','8','10','11');
-         legend('2','3','4','5','8','10'); % participants without ADHD
-%         legend('5','10','11'); % enough sequence trials
+        legend('2','3','4','5','8','10'); % participants without ADHD
+        %         legend('5','10','11'); % enough sequence trials
         ylim([-25 50]);
-%         ylim([0 50]);
+        %         ylim([0 50]);
         
         figure;
-%         subplot(1,2,2);
+        %         subplot(1,2,2);
         lineplot(T.probeTargetPos(T.group==2), T.probeErrorrel(T.group==2),'split', T.subject(T.group==2),'style_thickline','leg','auto');
         title ('Relative Error (Control)');
         ylabel('Relative Error(%)');
         legend('1 Cello/Piano','2','3','4','5','6','7','8');
         legend('12','13','15',',16','17','18','20','21','22','23','24','25','28','30','32')
-%         legend('19','34'); % enough sequence trials
+        %         legend('19','34'); % enough sequence trials
         
         ylim([-25 50]);
-%         ylim([0 50]); % not enough sequence trials
+        %         ylim([0 50]); % not enough sequence trials
         
-                figure;
-%         subplot(1,2,2);
+        figure;
+        %         subplot(1,2,2);
         lineplot(T.probeTargetPos(T.group==3), T.probeErrorrel(T.group==3),'split', T.subject(T.group==3),'style_thickline','leg','auto');
         title ('Relative Error (Control)');
         ylabel('Relative Error(%)');
@@ -977,37 +977,37 @@ figure;
         legend('12','13','15',',16','17','18','20','21','22','23','24','25','28','30','32')
         legend('12','13','15','17','18','20','23','24','32'); % enough sequence trials
         
-%         ylim([-25 50]);
+        %         ylim([-25 50]);
         
         figure;
-%         CAT.markertype={'v','^'};
-CAT.linecolor=...
-{[0 0 0],[0 0 1]};
-CAT.markercolor=...
-{[0 0 0],[0 0 1]};
-CAT.markerfill=...
-{[0 0 0],[0 0 1]};
-lineplot([T.probeTargetPos],T.probeErrorrel,...
-'split',T.group,...
-'CAT',CAT)
-% 'CAT',CAT)
+        %         CAT.markertype={'v','^'};
+        CAT.linecolor=...
+            {[0 0 0],[0 0 1]};
+        CAT.markercolor=...
+            {[0 0 0],[0 0 1]};
+        CAT.markerfill=...
+            {[0 0 0],[0 0 1]};
+        lineplot([T.probeTargetPos],T.probeErrorrel,...
+            'split',T.group,...
+            'CAT',CAT)
+        % 'CAT',CAT)
         
-
+        
     case 'Error'
         
-                cd(rawDir);
+        cd(rawDir);
         filename='cqDyspraxia_dataAll.mat';
         load(filename,'A') %load A
-       
-            
+        
+        
         A.NumError=zeros(length(A.ErrorTrial),1);
         
         for i=1:length(A.ErrorTrial)
-           if A.ErrorTrial(i)==1
-               A.NumError(i)=0;
-           else 
-               A.NumError(i)=1;
-           end
+            if A.ErrorTrial(i)==1
+                A.NumError(i)=0;
+            else
+                A.NumError(i)=1;
+            end
         end
         
         figure;
@@ -1016,53 +1016,53 @@ lineplot([T.probeTargetPos],T.probeErrorrel,...
         
         
         T.percentage =[];
- subjectID=unique((T.subject));
+        subjectID=unique((T.subject));
         for subj=1:length(subjectID)
             catHolder=T.MemCorrect(T.subject==subjectID(subj))./140;
             T.percentage = [T.percentage; catHolder];
         end
         T.percentage=T.percentage*100;
         
-                myboxplot(T.group,T.percentage,...
-'split',T.group,...
-'style_tukey',...
-'leg','auto','xtickoff')
-title ('Error for seqeunce Trials');
-ylabel('Percentage of Errors(%)');
-xlabel('Group')
-xticklabels({'DCD', 'Control'});
-legend('DCD','Control')
-
-figure;
-                scatterplot(T.subject(T.group==1),T.percentage(T.group==1),...
-'split',T.subject(T.group==1),...
-'leg','auto')
-title ('Error for seqeunce Trials (DCD)');
-ylabel('Percentage of Errors(%)');
-xlabel('Group')
-% xticklabels({'1', '2','3','4','5','6','7','8','9','10','11'});
-% legend('DCD','Control')
-
-figure;
-                scatterplot(T.subject(T.group==2),T.percentage(T.group==2),...
-'split',T.subject(T.group==2),...
-'leg','auto')
-title ('Error for seqeunce Trials (Control)');
-ylabel('Percentage of Errors(%)');
-xlabel('Group')
-
+        myboxplot(T.group,T.percentage,...
+            'split',T.group,...
+            'style_tukey',...
+            'leg','auto','xtickoff')
+        title ('Error for seqeunce Trials');
+        ylabel('Percentage of Errors(%)');
+        xlabel('Group')
+        xticklabels({'DCD', 'Control'});
+        legend('DCD','Control')
+        
+        figure;
+        scatterplot(T.subject(T.group==1),T.percentage(T.group==1),...
+            'split',T.subject(T.group==1),...
+            'leg','auto')
+        title ('Error for seqeunce Trials (DCD)');
+        ylabel('Percentage of Errors(%)');
+        xlabel('Group')
+        % xticklabels({'1', '2','3','4','5','6','7','8','9','10','11'});
+        % legend('DCD','Control')
+        
+        figure;
+        scatterplot(T.subject(T.group==2),T.percentage(T.group==2),...
+            'split',T.subject(T.group==2),...
+            'leg','auto')
+        title ('Error for seqeunce Trials (Control)');
+        ylabel('Percentage of Errors(%)');
+        xlabel('Group')
+        
     case 'violinplots'
         
-          cd(rawDir);
+        cd(rawDir);
         filename='cqDyspraxia_dataAll.mat';
         load(filename,'A')
         
-
-                T=tapply(A,{'subject'},{A.seqProd(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==3&A.points>0&A.day==3&A.TN>20);
+        
+        T=tapply(A,{'subject'},{A.seqProd(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==3&A.points>0&A.day==3&A.TN>20);
         V=tapply(A,{'subject'},{A.seqProd(:,1),'std','name','probeRTstd'},'subset',A.trialType==3&A.points>0&A.day==3&A.TN>20);
         
-      
-          fieldnames = fields(A);
+        
+        fieldnames = fields(A);
         
         for i=1:numel(fieldnames)
             J.(fieldnames{i}) = A.(fieldnames{i})(A.trialType==3&A.points>0&A.day==3&A.TN>20);
@@ -1074,39 +1074,39 @@ xlabel('Group')
             catHolder=A.seqProd(A.trialType==3&A.points>0&A.day==3&A.TN>20&A.subject==subj)>(T.probeRTmedian(subj,1)+3*(V.probeRTstd(subj,1)));
             J.outlier = [J.outlier; catHolder];
         end
-                
-                  fieldnames = fields(A);
+        
+        fieldnames = fields(A);
         
         for i=1:numel(fieldnames)
             J.(fieldnames{i})(J.outlier==1) = [];
         end
         
-         T=tapply(J,{'group','subject'},{J.seqProd,'nanmedian','name','seqProdmedian'},'subset',J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=7&J.subject~=11&J.subject~=2&J.subject~=34);
-%         % without ADHD
-         T=tapply(J,{'group','subject'},{J.seqProd,'nanmedian','name','seqProdmedian'},'subset',J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=2&J.subject~=16&J.subject~=28&J.subject~=30&J.subject~=21&J.subject~=22&J.subject~=25&J.subject~=3&J.subject~=4&J.subject~=7&J.subject~=8&J.subject~=34&J.subject~=11); %not enough sequence trials
-%         T=tapply(J,{'group','subject'},{J.seqProd,'nanmedian','name','seqProdmedian'},'subset',J.trialType==3&J.points>0&J.day==3&J.TN>20&J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=34); % no understand and not enough instructed
-%         B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=33&B.subject~=2
-%         T=tapply(J,{'group','subject'},{J.seqProd,'nanmedian','name','seqProdmedian'});
+        T=tapply(J,{'group','subject'},{J.seqProd,'nanmedian','name','seqProdmedian'},'subset',J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=7&J.subject~=11&J.subject~=2&J.subject~=34);
+        %         % without ADHD
+        T=tapply(J,{'group','subject'},{J.seqProd,'nanmedian','name','seqProdmedian'},'subset',J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=2&J.subject~=16&J.subject~=28&J.subject~=30&J.subject~=21&J.subject~=22&J.subject~=25&J.subject~=3&J.subject~=4&J.subject~=7&J.subject~=8&J.subject~=34&J.subject~=11); %not enough sequence trials
+        %         T=tapply(J,{'group','subject'},{J.seqProd,'nanmedian','name','seqProdmedian'},'subset',J.trialType==3&J.points>0&J.day==3&J.TN>20&J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=34); % no understand and not enough instructed
+        %         B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=33&B.subject~=2
+        %         T=tapply(J,{'group','subject'},{J.seqProd,'nanmedian','name','seqProdmedian'});
         T.seqProdmedian = T.seqProdmedian*1000;
         figure;
         myboxplot(T.group,T.seqProdmedian,...
-'split',T.group,...
-'style_tukey',...
-'leg','auto',...
-'xtickoff')
-% title ('Movement Time (ms) ');
-ylabel('Movement Time (ms)');
-xlabel('Group')
-xticks([1,2]);
-xticklabels({'DCD', 'Control'});
-legend('DCD','Control')
-
-
- T=tapply(A,{'subject'},{A.firstKeyRT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==3&A.points>0&A.day==3&A.TN>20);
+            'split',T.group,...
+            'style_tukey',...
+            'leg','auto',...
+            'xtickoff')
+        % title ('Movement Time (ms) ');
+        ylabel('Movement Time (ms)');
+        xlabel('Group')
+        xticks([1,2]);
+        xticklabels({'DCD', 'Control'});
+        legend('DCD','Control')
+        
+        
+        T=tapply(A,{'subject'},{A.firstKeyRT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==3&A.points>0&A.day==3&A.TN>20);
         V=tapply(A,{'subject'},{A.firstKeyRT(:,1),'std','name','probeRTstd'},'subset',A.trialType==3&A.points>0&A.day==3&A.TN>20);
         
-      
-          fieldnames = fields(A);
+        
+        fieldnames = fields(A);
         
         for i=1:numel(fieldnames)
             J.(fieldnames{i}) = A.(fieldnames{i})(A.trialType==3&A.points>0&A.day==3&A.TN>20);
@@ -1118,62 +1118,62 @@ legend('DCD','Control')
             catHolder=A.seqProd(A.trialType==3&A.points>0&A.day==3&A.TN>20&A.subject==subj)>(T.probeRTmedian(subj,1)+3*(V.probeRTstd(subj,1)));
             J.outlier = [J.outlier; catHolder];
         end
-                
-                  fieldnames = fields(A);
+        
+        fieldnames = fields(A);
         
         for i=1:numel(fieldnames)
             J.(fieldnames{i})(J.outlier==1) = [];
         end
         
         
-%           T=tapply(J,{'group','subject'},{J.firstKeyRT,'nanmedian','name','seqInitiationmedian'},'subset',J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=7&J.subject~=11&J.subject~=2&J.subject~=34);
-%         no ADHD
-         T=tapply(J,{'group','subject'},{J.firstKeyRT,'nanmedian','name','seqInitiationmedian'},'subset',J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=2&J.subject~=16&J.subject~=28&J.subject~=30&J.subject~=21&J.subject~=22&J.subject~=25&J.subject~=3&J.subject~=4&J.subject~=7&J.subject~=8&J.subject~=34); % not enough sequence trials
-%          T=tapply(J,{'group','subject'},{J.firstKeyRT,'nanmedian','name','seqInitiationmedian'});
-%          T=tapply(J,{'group','subject'},{J.firstKeyRT,'nanmedian','name','seqInitiationmedian'},'subset',J.trialType==3&J.points>0&J.day==3&J.TN>20&J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=2&J.subject~=34);
-%         T=tapply(J,{'group','subject'},{J.firstKeyRT,'nanmedian','name','seqInitiationmedian'},'subset',J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33);% didn't understand the task
-
+        %           T=tapply(J,{'group','subject'},{J.firstKeyRT,'nanmedian','name','seqInitiationmedian'},'subset',J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=7&J.subject~=11&J.subject~=2&J.subject~=34);
+        %         no ADHD
+        T=tapply(J,{'group','subject'},{J.firstKeyRT,'nanmedian','name','seqInitiationmedian'},'subset',J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=2&J.subject~=16&J.subject~=28&J.subject~=30&J.subject~=21&J.subject~=22&J.subject~=25&J.subject~=3&J.subject~=4&J.subject~=7&J.subject~=8&J.subject~=34); % not enough sequence trials
+        %          T=tapply(J,{'group','subject'},{J.firstKeyRT,'nanmedian','name','seqInitiationmedian'});
+        %          T=tapply(J,{'group','subject'},{J.firstKeyRT,'nanmedian','name','seqInitiationmedian'},'subset',J.trialType==3&J.points>0&J.day==3&J.TN>20&J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33&J.subject~=2&J.subject~=34);
+        %         T=tapply(J,{'group','subject'},{J.firstKeyRT,'nanmedian','name','seqInitiationmedian'},'subset',J.subject~=1&J.subject~=6&J.subject~=9&J.subject~=14&J.subject~=26&J.subject~=27&J.subject~=29&J.subject~=31&J.subject~=19&J.subject~=16&J.subject~=33);% didn't understand the task
+        
         T.seqInitiationmedian = T.seqInitiationmedian*1000;
         figure;
         myboxplot(T.group,T.seqInitiationmedian,...
-'split',T.group,...
-'style_tukey',...
-'leg','auto','xtickoff')
-% title ('Movement Time (ms) ');
-ylabel('Sequence Initiation (ms)');
-xlabel('Group') 
-xticklabels({'DCD', 'Control'});
-legend('DCD','Control')
+            'split',T.group,...
+            'style_tukey',...
+            'leg','auto','xtickoff')
+        % title ('Movement Time (ms) ');
+        ylabel('Sequence Initiation (ms)');
+        xlabel('Group')
+        xticklabels({'DCD', 'Control'});
+        legend('DCD','Control')
         
     case 'raster'
         
-                 cd(rawDir);
+        cd(rawDir);
         filename='cqDyspraxia_dataAll.mat';
         load(filename,'A')
         
-
+        
         
         figure;
         size(A.subject(:,1))
         
-         A.spikes=[];
-         subjectID=unique((A.subject));
+        A.spikes=[];
+        subjectID=unique((A.subject));
         for subj=1:length(subjectID)
             for i=1:4
-%            A.spikes=size(A.RT(:,i));
-            
-           spikes=A.RT(A.subject==subjectID(subj)&A.day==3&A.trialType==3&A.points>0, i);
-%            if isempty(
-           spikes = spikes';
-           
-           A.spikes = [A.spikes; spikes];
-           end
+                %            A.spikes=size(A.RT(:,i));
+                
+                spikes=A.RT(A.subject==subjectID(subj)&A.day==3&A.trialType==3&A.points>0, i);
+                %            if isempty(
+                spikes = spikes';
+                
+                A.spikes = [A.spikes; spikes];
             end
+        end
 end
 
-        
+
 %         nrPressesColor=[0.75, 0, 0.75; 0, 0.5, 0; 1, 0.4, 0; 0.4 .4 .4];
-        
-        
+
+
 end
 
