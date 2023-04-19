@@ -1,4 +1,4 @@
-function bimanualCQHC_ana(which) %wrapper code
+function bimanualCQHC_ana(which, varargin) %wrapper code
 % Imports raw data, saves relevant data in a structure, plots individual and
 % group data, and does basic stats
 % ---------------------------------------------------
@@ -17,13 +17,14 @@ function bimanualCQHC_ana(which) %wrapper code
 % addpath(genpath('C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC/CQHC/matlab'));%experimental code
 
 %%%% CHBH RY PC
-baseDir= 'C:/Users/yewbreyr/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
+% baseDir= 'C:/Users/yewbreyr/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
 
 %%%% Home RY PC
-% baseDir= 'C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
+baseDir= 'C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
 
 %Directory where psychoPy saves to
 rawDir= [baseDir '/bimanualCQ_HC2/data'];
+rawDirUoB = [baseDir '/bimanualCQ_HC2brum/data'];
 
 %Directory where processed data should be saved
 saveDir= [baseDir '/CQHC/data'];
@@ -38,7 +39,7 @@ switch which
         A=[]; %structure across subj
         S=[]; %structure across days
         
-        rawFileName = bimanualCQHC_prepFileNames; %function to define filenames (edit accordingly)
+        rawFileName = bimanualCQHC_prepFileNames(rawDir, rawDirUoB); %function to define filenames (edit accordingly)
         
         for subj=1:size(rawFileName,1) %subj loop
             for day=1:size(rawFileName,2) %day loop
@@ -60,7 +61,6 @@ switch which
         save(fullfile(saveDir, filename), 'A')
         
         bimanualCQHC_ana('outliers') %run outliers case to view participants to exclude and add A.outlierError variable
-        
     case 'loadDemographics'
         cd(saveDir)
         
@@ -119,17 +119,11 @@ switch which
         Q.gamerFiveHoursPlus = tbl.HowManyHoursOfGamingDoYouDoPerWeek__5_Hours_pleaseSpecify__Text;
         
         save('cqHC_questionnaire.mat','Q')
-        
-    case 'subjOverview'
-        [A, subj] = CQHC_initCase(saveDir);
-        
-        A.RT
-        
     case 'outliers'
-        [A, subj] = CQHC_initCase(saveDir);
+        [A, ~] = CQHC_initCase(saveDir);
         
         %Plot number of erroneous presses (not trials) for each participant
-        M=tapply(A,{'subjN'},{A.errorSum,'sum','name','pressError'},'subset',A.day=='day3'&A.trialType==3&A.TN>21);
+        M=tapply(A,{'subjN'},{A.errorSum,'sum','name','pressError'},'subset',A.day==3&A.trialType==3&A.TN>21);
         
         figure;
         scatterplot(M.subjN,M.pressError,...
@@ -139,7 +133,7 @@ switch which
         % ---------------------------------------------------------------- %
         
         % percentage of press errors for entire sequence trials
-        nPressesTotal = length(A.RT(A.subjN == 1 & A.day == 'day3' & A.trialType==3&A.TN>21)) * 4; %total presses per subj
+        nPressesTotal = length(A.RT(A.subjN == 1 & A.day == 3 & A.trialType==3&A.TN>21)) * 4; %total presses per subj
         M.percentage = (M.pressError / nPressesTotal) * 100; %convert n errors into percent
         
         figure;
@@ -151,9 +145,9 @@ switch which
         % ---------------------------------------------------------------- %
         
         % percentage of whole-trial errors
-        T=tapply(A,{'subjN'},{A.errorTrial(:,1),'sum','name','errorTrialSum'},'subset',A.day=='day3'&A.trialType==3&A.TN>21);
+        T=tapply(A,{'subjN'},{A.errorTrial(:,1),'sum','name','errorTrialSum'},'subset',A.day==3&A.trialType==3&A.TN>21);
         
-        nTrialsTotal = length(A.errorTrial(A.subjN == 1 & A.day=='day3'&A.trialType==3&A.TN>21));
+        nTrialsTotal = length(A.errorTrial(A.subjN == 1 & A.day==3&A.trialType==3&A.TN>21));
         T.percentage = (T.errorTrialSum / nTrialsTotal) * 100;
         
         figure;
@@ -169,18 +163,24 @@ switch which
         %in later cases
         A.outlierError = zeros(length(A.RT),1);
         highError = T.subjN(T.percentage > errorThreshold);
+        lowError  = T.subjN(T.percentage < errorThreshold);
         A.outlierError(ismember(A.subjN, highError)) = 1;
+        
+        totSubj = length(highError) + length(lowError);
+        percHighError = (length(highError) / totSubj) * 100;
+        
+        title(['Good participants: ' num2str(length(lowError)) ', bad participants: ' num2str(length(highError)) ', exclusion percentage: ' num2str(percHighError) '%'])
         
         filename='cqHC_dataAll';
         save(fullfile(saveDir, filename), 'A')
         
     case 'gradientRT' %plots probe RTs both raw and normalised to first position. Removes outliers.
-        [A, subj] = CQHC_initCase(saveDir);%init
+        [A, ~] = CQHC_initCase(saveDir);%init
         
         %%%remove outliers and separate trials of interest into B struct
         fieldnames = fields(A);
         for i=1:numel(fieldnames)%for fieldnames
-            B.(fieldnames{i}) = A.(fieldnames{i})(A.trialType==2&A.points>0&A.day=='day3'&A.TN>21&A.outlierError==0);
+            B.(fieldnames{i}) = A.(fieldnames{i})(A.trialType==2&A.points>0&A.day==3&A.TN>21&A.outlierError==0);
         end%for fieldnames
         
         B.outlier = NaN(length(B.RT), 1);
@@ -218,7 +218,6 @@ switch which
         ylabel('Relative probe RT (%)')
         xlabel('Probe position')
         title(['N = ' num2str(length(unique(R.subjN)))])
-        % ---------------------------------------------------------------- %
         
         %test significance of CQ gradient (normalised to first probe)
         probeRT = NaN(length(R.probeRT(R.probeTargetPos == 1)), length(unique(R.probeTargetPos)'));
@@ -230,20 +229,62 @@ switch which
             [t(i), p(i)] = ttest(probeRT(:,i),probeRT(:,i+1),2,'paired');
         end%for diff between probes
         
-        p = p / 2; %convert to one-tailed test (was annoying to code into the function directly)
+        p = p / 2; %convert to ONE-TAILED test (was annoying to code into the function directly)
         astXLoc = [1.35, 2.05, 2.75, 3.6, 4.45, 5.15, 5.85]; %x coordinates for the significance *s on plot
         astYLoc = [15,   20,   20,   25,  33,   30,   30];
         %display asterisks between sig results
         text(astXLoc(p < .05),astYLoc(p < .05),'*','fontSize',20);
         disp(p)
+        % ---------------------------------------------------------------- %
+        
+        %%%calculate relative RT differences (average difference between
+        %%%adjacent probe positions, Mantziara et al (2021)
+        relRTDiff = NaN(length(R.probeRT(R.probeTargetPos == 1)), 3);
+        for i=1:3%for 
+            relRTDiff(:,i) = R.probeRT(R.probeTargetPos == i+1) - R.probeRT(R.probeTargetPos == i);
+        end
+        relRTDiff = mean(relRTDiff, 2); 
+        A.relRTDiff = NaN(length(A.subjID),1); loopCounter = 1;
+        for i=unique(A.subjN(A.outlierError == 0))'
+            A.relRTDiff(A.subjN == i, 1) = relRTDiff(loopCounter);
+            loopCounter = loopCounter + 1;
+        end
+        
+        filename='cqHC_dataAll';
+        save(fullfile(saveDir, filename), 'A')
+    case 'gradientPerformanceCorrelation'
+        [A, ~] = CQHC_initCase(saveDir);%init
+        
+        R = tapply(A,{'subjN','relRTDiff'},{A.RT(:,1),'nanmedian','name','memoryRT'},'subset',...
+            A.trialType==3&A.TN>21&A.outlierError==0);
+        R.memoryRT = R.memoryRT * 1000; %convert from s to ms
+        
+        [r, p] = corrcoef(R.relRTDiff, R.memoryRT);
+        figure
+        scatterplot(R.memoryRT, R.relRTDiff, 'regression', 'linear')
+        xlabel('Initiation RT(ms)')
+        ylabel('Relative RT differences (%)')
+        title(['N = ' num2str(length(R.subjN)) ', r = ' num2str(r(2,1)) ', p = ' num2str(p(2,1))])
+        % ---------------------------------------------------------------- %
+        
+        P = tapply(A,{'subjN','relRTDiff'},{A.RT(:,4),'nanmedian','name','memoryProd'},'subset',...
+            A.trialType==3&A.TN>21&A.outlierError==0);
+        P.memoryProd = P.memoryProd * 1000; %convert from s to ms
+        
+        [r, p] = corrcoef(P.relRTDiff, P.memoryProd);
+        figure
+        scatterplot(P.memoryProd, P.relRTDiff, 'regression', 'linear')
+        xlabel('Total production time (ms)')
+        ylabel('Relative RT differences (%)')
+        title(['N = ' num2str(length(P.subjN)) ', r = ' num2str(r(2,1)) ', p = ' num2str(p(2,1))])
         
     case 'gradientRTBySubj'
-        [A, subj] = CQHC_initCase(saveDir);%init
+        [A, ~] = CQHC_initCase(saveDir);%init
         
         %%%remove outliers and separate trials of interest into B struct
         fieldnames = fields(A);
         for i=1:numel(fieldnames)%for fieldnames
-            B.(fieldnames{i}) = A.(fieldnames{i})(A.trialType==2&A.points>0&A.day=='day3'&A.TN>21&A.outlierError==0&A.probeTargetPos<=8);
+            B.(fieldnames{i}) = A.(fieldnames{i})(A.trialType==2&A.points>0&A.day==3&A.TN>21&A.outlierError==0&A.probeTargetPos<=8);
         end%for fieldnames
         
         B.outlier = NaN(length(B.RT), 1);
@@ -273,7 +314,6 @@ switch which
         ylabel('Relative probe RT (%)')
         xlabel('Probe position')
         title(['N = ' num2str(length(unique(B.subjN)))])
-        
     case 'gradientError'
         [A, subj] = CQHC_initCase(saveDir); %init
         
@@ -294,8 +334,101 @@ switch which
         
         R = tapply(A,{'probeTargetPos','subjID'},{A.RT(:,1),'mean','name','probeRT'},'subset',A.trialType == 2);
         
+    case 'dayProgression'
+        [A, ~] = CQHC_initCase(saveDir);
+        
+        R = tapply(A,{'day','subjN'},{A.RT(:,1),'nanmedian','name','memoryRT'},'subset', A.trialType == 3);
+        R.memoryRT = R.memoryRT * 1000;
+        
+        figure
+        lineplot(R.day, R.memoryRT)
+        ylabel('RT (ms)')
+        xlabel('Day')
+        
+        %test significance of RT between days
+        for i = 1:length(unique(R.day)') - 1%for diff between days
+            [t(i), p(i)] = ttest(R.memoryRT(R.day == i),R.memoryRT(R.day == i+1),2,'paired');
+        end%for diff between days
+        
+        p = p / 2; %convert to one-tailed test (was annoying to code into the function directly)
+        astXLoc = [1.5, 2.5]; %x coordinates for the significance *s on plot
+        astYLoc = [650, 550];
+        %display asterisks between sig results
+        text(astXLoc(p < .05),astYLoc(p < .05),'*','fontSize',20);
+        disp(p)
+        % ---------------------------------------------------------------- %
+        
+        
+        P = tapply(A,{'day','subjN'},{A.RT(:,4),'nanmedian','name','memoryRT'},'subset', A.trialType == 3);
+        P.memoryRT = P.memoryRT * 1000;
+        
+        figure
+        lineplot(P.day, P.memoryRT)
+        ylabel('Total movement time (ms)')
+        xlabel('Day')
+        
+        %test significance of move time between days
+        for i = 1:length(unique(P.day)') - 1%for diff between days
+            [t(i), p(i)] = ttest(P.memoryRT(R.day == i),P.memoryRT(R.day == i+1),2,'paired');
+        end%for diff between days
+        
+        p = p / 2; %convert to one-tailed test (was annoying to code into the function directly)
+        astXLoc = [1.5,   2.5]; %x coordinates for the significance *s on plot
+        astYLoc = [1500, 1300];
+        %display asterisks between sig results
+        text(astXLoc(p < .05),astYLoc(p < .05),'*','fontSize',20);
+        disp(p)
+        % ---------------------------------------------------------------- %
+    case 'sequenceDifferences'
+        [A, ~] = CQHC_initCase(saveDir);%init
+        
+        R = tapply(A,{'fractal','seqSet','subjN'},{A.RT(:,1),'nanmedian','name','memoryRT'},'subset',...
+            A.trialType==3&A.TN>21&A.outlierError==0);
+        
+        figure
+        R.memoryRT = R.memoryRT * 1000; %ms conversion
+        barplot([R.seqSet, R.fractal], R.memoryRT)
+        ylabel('Reaction time (ms)')
+        xlabel('Sequence set')
+        
+        %test significance of RT between seq sets
+        for i = 1:length(unique(R.seqSet)') - 1%for diff between seq sets
+            [t(i), p(i)] = ttest(R.memoryRT(R.seqSet == i),R.memoryRT(R.seqSet == i+1),2,'paired');
+        end%for diff between seq sets
+        
+        %p = p / 2; %convert to one-tailed test (was annoying to code into the function directly)
+        astXLoc = [2.75]; %x coordinates for the significance *s on plot
+        astYLoc = [450 ];
+        %display asterisks between sig results
+        text(astXLoc(p < .05),astYLoc(p < .05),'*','fontSize',20);
+        disp(p)
+        % ---------------------------------------------------------------- %
+        
+        P = tapply(A,{'fractal','seqSet','subjN'},{A.RT(:,4),'nanmedian','name','memoryRT'},'subset',...
+            A.trialType==3&A.TN>21&A.outlierError==0);
+        
+        figure
+        P.memoryRT = P.memoryRT * 1000; %ms conversion
+        barplot([P.seqSet, P.fractal], P.memoryRT)
+        ylabel('Total movement time (ms)')
+        xlabel('Sequence set')
+        
+        %test significance of RT between seq sets
+        for i = 1:length(unique(P.seqSet)') - 1%for diff between seq sets
+            [t(i), p(i)] = ttest(P.memoryRT(P.seqSet == i),P.memoryRT(P.seqSet == i+1),2,'paired');
+        end%for diff between seq sets
+        
+        %p = p / 2; %convert to one-tailed test (was annoying to code into the function directly)
+        astXLoc = 2.75; %x coordinates for the significance *s on plot
+        astYLoc = 1250;
+        %display asterisks between sig results
+        text(astXLoc(p < .05),astYLoc(p < .05),'*','fontSize',20);
+        disp(p)
+        % ---------------------------------------------------------------- %
+        
+        
     case 'plot'  %% Extract RT, errors per condition and plot
-        [A, subj] = CQHC_initCase(saveDir);
+        [A, ~] = CQHC_initCase(saveDir);
         
         %Raincloud plot
         colPos=[0.5 0.8 0.9; 1 0.7 1; 0.7 0.8 0.9; 0.8 0.5 0.4];
@@ -323,8 +456,8 @@ switch which
         A.colwonk = A.colwonk';
         
         for i=1:4%for probe position
-            RTpos=A.RT(A.trialType==2 & A.points>0,i);% & A.day == 'day3');% & A.colwonk == 1, i);
-            RTpos=A.RT(A.trialType==1 & A.points>0,i);% & A.day == 'day3');% & A.colwonk == 1, i);
+            RTpos=A.RT(A.trialType==2 & A.points>0,i);% & A.day == 3);% & A.colwonk == 1, i);
+            RTpos=A.RT(A.trialType==1 & A.points>0,i);% & A.day == 3);% & A.colwonk == 1, i);
             
             
             raincloud_plot(RTpos,'color',colPos(i,:));
@@ -343,7 +476,7 @@ switch which
     case 'stats'  %% Basic stats
         [A, subj] = CQHC_initCase(saveDir);
         
-        B = structfun(@(X) X(A.trialType == 3 & A.day == 'day3' & A.points >= 1,:), A, 'Uni', false);
+        B = structfun(@(X) X(A.trialType == 3 & A.day == 3 & A.points >= 1,:), A, 'Uni', false);
         
         for i=subj'%for each subj
             for j=1:length(B.RT(1,:))%for each press col
@@ -357,8 +490,8 @@ switch which
             B = structfun(@(X) X(outlierIdx <=1,:), B, 'Uni', false); %remove entire trial
         end%for each subj
         
-        RFirst = tapply(A,{'subjID'},{A.RT(:,1),'nanmean','name','moveTime'},'subset',A.trialType == 3 & A.day == 'day3');
-        R  = tapply(A,{'subjID'},{A.RT(:,4),'nanmean','name','moveTime'},'subset',A.trialType == 3 & A.day == 'day3');
+        RFirst = tapply(A,{'subjID'},{A.RT(:,1),'nanmean','name','moveTime'},'subset',A.trialType == 3 & A.day == 3);
+        R  = tapply(A,{'subjID'},{A.RT(:,4),'nanmean','name','moveTime'},'subset',A.trialType == 3 & A.day == 3);
         
         R.moveTime = R.moveTime - RFirst.moveTime;
         
@@ -383,7 +516,7 @@ switch which
                 A.numErrorpress(i)=4;
             end
         end
-        M=tapply(A,{'subjN'},{A.errorSum,'sum','name','pressError'},'subset',A.day=='day3'&A.trialType==3&A.TN>20);
+        M=tapply(A,{'subjN'},{A.errorSum,'sum','name','pressError'},'subset',A.day==3&A.trialType==3&A.TN>20);
         figure;
         scatterplot(M.subjN,M.pressError,...
             'leg','auto')
@@ -488,7 +621,7 @@ switch which
         drawline(30,'dir','horz','color',[0 0 0],'linestyle','-')
         
     case 'demographicOverview'
-        [Q, subj] = CQHC_initCaseDemographic(saveDir);
+        [Q, ~] = CQHC_initCaseDemographic(saveDir);
         
         nMusical = sum(Q.musical); nSporty = sum(Q.sporty); nDancer = sum(Q.dancer); nGamer = sum(Q.gamer);
         nTotal = length(Q.subjID);
@@ -548,227 +681,5 @@ switch which
         end
         
         Q;
-        
-    case 'relativeRT'
-        [A, subj] = CQHC_initCase(saveDir);
-        
-        A.RT
-        
-        %         T=tapply(A,{'group','subject','probeTargetPos'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==3&A.points>0&A.day==3);
-        T=tapply(A,{'subjN'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day=='day3'&A.TN>21);
-        V=tapply(A,{'subjN'},{A.RT(:,1),'std','name','probeRTstd'},'subset',A.trialType==2&A.points>0&A.day=='day3'&A.TN>21);
-        
-        
-        fieldnames = fields(A);
-        
-        for i=1:numel(fieldnames)
-            B.(fieldnames{i}) = A.(fieldnames{i})(A.trialType==2&A.points>0&A.day=='day3'&A.TN>21);
-        end
-        
-        B.outlier=[];
-        subjID=unique((T.subjN));
-        for subj=1:length(subjID)
-            catHolder=A.RT(A.trialType==2&A.points>0&A.day=='day3'&A.TN>21&A.subjID==subj)>(T.probeRTmedian(subj,1)+3*(V.probeRTstd(subj,1)));
-            B.outlier = [B.outlier; catHolder];
-        end
-        
-        fieldnames = fields(A);
-        
-        for i=1:numel(fieldnames)
-            B.(fieldnames{i})(B.outlier==1) = [];
-        end
-        
-        % Outliers removed, those who did not complete enough instructed
-        % trials
-        % B.subject~=1&B.subject~=2&
-        %         Q=tapply(A,{'group','subject','probeTargetPos'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject~=26&A.subject~=27&A.subject~=28&A.subject~=29&A.subject~=30&A.subject~=31&A.subject~=33&A.subject~=34&A.subject~=16&A.subject~=19&A.subject~=4);
-        %         Q=tapply(B,{'group','subjID','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day=='day3'&B.TN>21&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=16&B.subject~=19&B.subject~=34);%all participants removed who didn't understand the task
-        %         Q=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day=='day3'&B.TN>21&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=34&B.subject~=7&B.subject~=11&B.subject~=2); %participants removed who have ADHD
-        %         Q=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day=='day3'&B.TN>21&B.subject~=1&B.subject~=6&B.subject~=9&B.subject~=14&B.subject~=26&B.subject~=27&B.subject~=29&B.subject~=31&B.subject~=19&B.subject~=16&B.subject~=33&B.subject~=2); % not enough instructed trials completed
-        Q=tapply(B,{'subjID','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day=='day3'&B.TN>21); % not enough sequence trials
-        Q.probeRTrel=nan(size(Q.subjID,1),1);
-        
-        subjectID=unique((Q.subjID));
-        for subj=1:length(subjectID)
-            RTbase=Q.probeRTmedian(Q.subjID==subjectID(subj)&Q.probeTargetPos==1,1);
-            Q.probeRTrel(Q.subjID==subjectID(subj),1)=(Q.probeRTmedian(Q.subjID==subjectID(subj),1)/RTbase - 1)*100;
-        end
-        
-        % Relative RT graph for DCD
-        figure;
-        %         subplot(1,13,subjectID);
-        lineplot(Q.probeTargetPos, Q.probeRTrel,'split',Q.subjID,'style_thickline','leg','auto');
-        title('RT subject');
-        ylabel('RT increase(%)');
-        legend('3','4','5','8','10');
-        %         legend('2','3','4','5','8','10','11','19','33'); % without ADHD
-        %         legend('5','10'); % enough sequence trials
-        %         ylim([-25 50])
-        ylim([-5 50])
-        
-        figure;
-        % Relative RT graph for control
-        %         lineplot(Q.probeTargetPos(Q.group==2), Q.probeRTrel(Q.group==2),'split',Q.subject(Q.group==2),'style_thickline','leg','auto');
-        %         title('RT subject(Control)');
-        %         ylabel('RT increase(%)');
-        %         legend('12','13','15','17','18','20','21','22','23','24','25','28','30','32');
-        %         legend('12','13','15','17','18','20','23','24','32'); % enough sequence trials
-        %         ylim([-25 50])
-        %         ylim([-5 50])
-        
-        %         figure;
-        %                 lineplot(Q.probeTargetPos(Q.group==2), Q.probeRTrel(Q.group==2),'split',Q.subject(Q.group==2),'style_thickline','leg','auto');
-        %         title('RT subject(DCD)');
-        %         ylabel('RT increase(%)');
-        % %         legend('3','4','5','7','8','10','11');
-        %         legend('19','34'); % without ADHD
-        % %         legend('5','10'); % enough sequence trials
-        %         % Relative RT graph split by group
-        
-        %         figure;
-        %         %         subplot(1,33,subjectID);
-        %         lineplot(Q.probeTargetPos, Q.probeRTrel,'split', Q.group,'style_thickline','leg','auto');
-        %         title ('RT group');
-        %         ylabel('RT increase(%)');
-        %         legend('DCD','Control');
-        
-        % Outlier removed, those who did not get enough probe trials or
-        % sequence trials correct
-        
-        L=tapply(A,{'group','subject','probeTargetPos'},{A.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subject~=1&A.subject~=2&A.subject~=3&A.subject~=4&A.subject~=6&A.subject~=7&A.subject~=8&A.subject~=9&A.subject~=14&A.subject~=16&A.subject~=26&A.subject~=27&A.subject~=28&A.subject~=29&A.subject~=30&A.subject~=31);
-        L=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.trialType==2&B.points>0&B.day==3&B.TN>20&B.subject~=1&B.subject~=2&B.subject~=3&B.subject~=4&B.subject~=6&B.subject~=7&B.subject~=8&B.subject~=9&B.subject~=14&B.subject~=16&B.subject~=26&B.subject~=27&B.subject~=28&B.subject~=29&B.subject~=30&B.subject~=31&B.subject~=19&B.subject~=21&B.subject~=22&B.subject~=25&B.subject~=34&B.subject~=23&B.subject~=11&B.outliersRemoved==1);
-        
-        L.probeRTrel=nan(size(L.subject,1),1);
-        
-        subjectID=unique((L.subject));
-        for subj=1:length(subjectID)
-            RTbase=L.probeRTmedian(L.subject==subjectID(subj)&L.probeTargetPos==1,1);
-            L.probeRTrel(L.subject==subjectID(subj),1)=(L.probeRTmedian(L.subject==subjectID(subj),1)/RTbase - 1)*100;
-        end
-        
-        % Relative RT graph for DCD
-        figure;
-        %         subplot(1,13,subjectID);
-        lineplot(L.probeTargetPos(L.group==1), L.probeRTrel(L.group==1),'split',L.subject(L.group==1),'style_thickline','leg','auto');
-        title('RT subject(DCD)');
-        ylabel('RT increase(%)');
-        legend('5','10','11');
-        
-        figure;
-        % Relative RT graph for control
-        lineplot(L.probeTargetPos(L.group==2), L.probeRTrel(L.group==2),'split',L.subject(L.group==2),'style_thickline','leg','auto');
-        title('RT subject(Control)');
-        ylabel('RT increase(%)');
-        %         legend('4','5','6','7','8','9','10','11');
-        
-        % Relative RT graph split by group
-        figure;
-        %         subplot(1,33,subjectID);
-        lineplot(L.probeTargetPos, L.probeRTrel,'split', L.group,'style_thickline','leg','auto');
-        title ('RT group');
-        ylabel('RT increase(%)');
-        legend('DCD','Control');
-        %         G=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'});
-        G=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.outliersRemoved==1);
-        %         M=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'},'subset',B.outliersRemoved==1);
-        
-        
-        %         A.outlier=...zeros(,)
-        %         for... subj
-        %                 A.outlier=A.RT(A.trialType==2&A.points>0&A.day==3&A.TN>20&A.subj(..,),1)>(T.probeRTmedian(subj,1)+3*(T.probeRTstd(subj,1)));
-        %         end
-        %
-        figure;
-        subplot(1,1,1);
-        lineplot(G.probeTargetPos, G.probeRTmedian*1000,'split',G.group,'style_thickline','leg','auto');
-        title ('RT');
-        ylabel('RT(ms)');
-        legend('DCD', 'Control');
-        
-        
-        figure;
-        subplot(1,2,1);
-        lineplot(G.probeTargetPos(G.group==1), G.probeRTmedian(G.group==1)*1000,'split', G.subject(G.group==1),'style_thickline','leg','auto');
-        title (' RT (DCD)');
-        ylabel('RT(ms)');
-        %         ylim([350 800]);
-        legend('1', '2','3 Flute','4','5','6','7','8','9','10','11');
-        
-        subplot(1,2,2);
-        lineplot(G.probeTargetPos(G.group==2), G.probeRTmedian(G.group==2)*1000,'split', G.subject(G.group==2),'style_thickline','leg','auto');
-        title (' RT (Control)');
-        ylabel('RT(ms)');
-        %         ylim([350 800]);
-        legend('12', '13','14','15','16','17','18','19','20','21','22','23','24','25','26','27(outlier)','28','29','30','31','32','33');
-        
-        figure;
-        subplot(1,2,2);
-        lineplot(G.probeTargetPos, G.probeRTmedian*1000,'split', G.subject==33,'style_thickline','leg','auto');
-        title (' RT (Control)');
-        ylabel('RT(ms)');
-        %         ylim([350 800]);
-        %         legend('31','32','33');
-        
-        G.probeRTrel=nan(size(G.subject,1),1);
-        
-        subjectID=unique((G.subject));
-        for subj=1:length(subjectID)
-            RTbase=G.probeRTmedian(G.subject==subjectID(subj)&G.probeTargetPos==1,1);
-            G.probeRTrel(G.subject==subjectID(subj),1)=(G.probeRTmedian(G.subject==subjectID(subj),1)/RTbase - 1)*100;
-        end
-        
-        figure;
-        %         subplot(1,13,subjectID);
-        lineplot(G.probeTargetPos(G.group==1), G.probeRTrel(G.group==1),'split',G.subject(G.group==1),'style_thickline','leg','auto');
-        title('RT subject(DCD)');
-        ylabel('RT increase(%)');
-        ylim([-5 30]);
-        %         legend('1 Cello/Piano','2','3','4','5','6','7','8');
-        legend('1 NoSeqProd','2 NoSeqProd','3','4 Grade7Piano','5','6','7 Grade4Flute','8','9');
-        %         xticks([1 2]);
-        %         xticklabels({'DCD', 'Control'});
-        %         legend('DCD','Control')
-        
-        figure;
-        %         subplot(1,13,subjectID);
-        
-        lineplot(G.probeTargetPos(G.group==2), G.probeRTrel(G.group==2),'split',G.subject(G.group==2),'style_thickline','leg','auto');
-        title('RT subject(control)');
-        ylabel('RT increase(%)');
-        %         ylim([-10 35]);
-        legend('1 Cello/Piano','2','3','4','5','6','7','8');
-        
-        figure;
-        %         subplot(1,33,subjectID);
-        lineplot(G.probeTargetPos, G.probeRTrel,'split', G.group,'style_thickline','leg','auto');
-        title ('RT group');
-        ylabel('RT increase(%)');
-        legend('DCD','Control');
-        %                 ylim([0 15]);
-        figure;
-        %         subplot(1,13,subjectID);
-        lineplot(G.probeTargetPos(G.subject==15), G.probeRTrel(G.subject==15),'style_thickline','leg','auto');
-        title('RT subject');
-        ylabel('RT increase(%)');
-        
-        % ylim([0,10]);
-        set(gca,'Fontsize',16)
-        
-        K=tapply(B,{'group','subject','probeTargetPos'},{B.RT(:,1),'nanmedian','name','probeRTmedian'});
-        
-        K.probeRTrel=nan(size(K.subject,1),1);
-        
-        
-        for position=1:4
-            RTbase=K.probeRTmedian&K.probeTargetPos==position;
-            K.probeRTrel=(K.probeRTmedian/RTbase - 1)*100;
-        end
-        figure;
-        subplot(1,33,subjectID);
-        lineplot(K.probeTargetPos, K.probeRTrel,'split',K.subject,'style_thickline','leg','auto');
-        title('RT subject');
-        ylabel('RT increase(%)');
-        
-        
         
 end

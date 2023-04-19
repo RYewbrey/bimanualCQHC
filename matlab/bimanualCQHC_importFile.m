@@ -212,4 +212,16 @@ for i=1:length(D.probeTargetPos)
     [~, D.probeTargetPos(i), ~] = find(contains(corrKeys(D.fractal(i),:),D.targetRespKey{i,1}));
 end
 
+%change day into number from string
+for i=1:length(D.day)
+    D.day(i)=sscanf(D.day(i),'%*[^0123456789]%f');
+end
+D.day=str2double(D.day);
+
+%change seqSet into number from cell
+for i=1:length(D.seqSet)
+    D.seqSet{i}=sscanf(D.seqSet{i},'%*[^0123456789]%f');
+end
+D.seqSet=cell2mat(D.seqSet);
+
 disp(D)
