@@ -17,10 +17,10 @@ function bimanualCQHC_ana(which, varargin) %wrapper code
 % addpath(genpath('C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC/CQHC/matlab'));%experimental code
 
 %%%% CHBH RY PC
-% baseDir= 'C:/Users/yewbreyr/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
+baseDir= 'C:/Users/yewbreyr/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
 
 %%%% Home RY PC
-baseDir= 'C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
+% baseDir= 'C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
 
 %Directory where psychoPy saves to
 rawDir= [baseDir '/bimanualCQ_HC2/data'];
@@ -30,7 +30,7 @@ rawDirUoB = [baseDir '/bimanualCQ_HC2brum/data'];
 saveDir= [baseDir '/CQHC/data'];
 
 %General variables that change analyses
-errorThreshold = 20; %error threshold for participant inclusion, default 20
+errorThreshold = 35; %error threshold for participant inclusion, default 20
 
 %Analysis Cases - switch as function input
 switch which
@@ -252,32 +252,6 @@ switch which
         
         filename='cqHC_dataAll';
         save(fullfile(saveDir, filename), 'A')
-    case 'gradientPerformanceCorrelation'
-        [A, ~] = CQHC_initCase(saveDir);%init
-        
-        R = tapply(A,{'subjN','relRTDiff'},{A.RT(:,1),'nanmedian','name','memoryRT'},'subset',...
-            A.trialType==3&A.TN>21&A.outlierError==0);
-        R.memoryRT = R.memoryRT * 1000; %convert from s to ms
-        
-        [r, p] = corrcoef(R.relRTDiff, R.memoryRT);
-        figure
-        scatterplot(R.memoryRT, R.relRTDiff, 'regression', 'linear')
-        xlabel('Initiation RT(ms)')
-        ylabel('Relative RT differences (%)')
-        title(['N = ' num2str(length(R.subjN)) ', r = ' num2str(r(2,1)) ', p = ' num2str(p(2,1))])
-        % ---------------------------------------------------------------- %
-        
-        P = tapply(A,{'subjN','relRTDiff'},{A.RT(:,4),'nanmedian','name','memoryProd'},'subset',...
-            A.trialType==3&A.TN>21&A.outlierError==0);
-        P.memoryProd = P.memoryProd * 1000; %convert from s to ms
-        
-        [r, p] = corrcoef(P.relRTDiff, P.memoryProd);
-        figure
-        scatterplot(P.memoryProd, P.relRTDiff, 'regression', 'linear')
-        xlabel('Total production time (ms)')
-        ylabel('Relative RT differences (%)')
-        title(['N = ' num2str(length(P.subjN)) ', r = ' num2str(r(2,1)) ', p = ' num2str(p(2,1))])
-        
     case 'gradientRTBySubj'
         [A, ~] = CQHC_initCase(saveDir);%init
         
@@ -314,6 +288,31 @@ switch which
         ylabel('Relative probe RT (%)')
         xlabel('Probe position')
         title(['N = ' num2str(length(unique(B.subjN)))])
+    case 'gradientPerformanceCorrelation'
+        [A, ~] = CQHC_initCase(saveDir);%init
+        
+        R = tapply(A,{'subjN','relRTDiff'},{A.RT(:,1),'nanmedian','name','memoryRT'},'subset',...
+            A.trialType==3&A.TN>21&A.outlierError==0);
+        R.memoryRT = R.memoryRT * 1000; %convert from s to ms
+        
+        [r, p] = corrcoef(R.relRTDiff, R.memoryRT);
+        figure
+        scatterplot(R.memoryRT, R.relRTDiff, 'regression', 'linear')
+        xlabel('Initiation RT(ms)')
+        ylabel('Relative RT differences (%)')
+        title(['N = ' num2str(length(R.subjN)) ', r = ' num2str(r(2,1)) ', p = ' num2str(p(2,1))])
+        % ---------------------------------------------------------------- %
+        
+        P = tapply(A,{'subjN','relRTDiff'},{A.RT(:,4),'nanmedian','name','memoryProd'},'subset',...
+            A.trialType==3&A.TN>21&A.outlierError==0);
+        P.memoryProd = P.memoryProd * 1000; %convert from s to ms
+        
+        [r, p] = corrcoef(P.relRTDiff, P.memoryProd);
+        figure
+        scatterplot(P.memoryProd, P.relRTDiff, 'regression', 'linear')
+        xlabel('Total production time (ms)')
+        ylabel('Relative RT differences (%)')
+        title(['N = ' num2str(length(P.subjN)) ', r = ' num2str(r(2,1)) ', p = ' num2str(p(2,1))])
     case 'gradientError'
         [A, subj] = CQHC_initCase(saveDir); %init
         
@@ -426,7 +425,6 @@ switch which
         disp(p)
         % ---------------------------------------------------------------- %
         
-        
     case 'plot'  %% Extract RT, errors per condition and plot
         [A, ~] = CQHC_initCase(saveDir);
         
@@ -472,7 +470,6 @@ switch which
         end%for probe position
         
         ylim([-4 8]);
-        
     case 'stats'  %% Basic stats
         [A, subj] = CQHC_initCase(saveDir);
         
@@ -494,7 +491,6 @@ switch which
         R  = tapply(A,{'subjID'},{A.RT(:,4),'nanmean','name','moveTime'},'subset',A.trialType == 3 & A.day == 3);
         
         R.moveTime = R.moveTime - RFirst.moveTime;
-        
     case 'errors'
         
         cd(saveDir);
