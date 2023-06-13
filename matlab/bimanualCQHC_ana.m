@@ -1,6 +1,10 @@
 function bimanualCQHC_ana(which, varargin) %wrapper code
+% bimanualCQHC_ana(which, varargin)
 % Imports raw data, saves relevant data in a structure, plots individual and
 % group data, and does basic stats
+% Inputs:
+%   which - string indicating which switch analysis case to run
+%   
 % ---------------------------------------------------
 % Foundation written by K. Kornysheva, September 2021
 % Adjusted and expanded by R. Yewbrey, October 2022
@@ -13,14 +17,17 @@ function bimanualCQHC_ana(which, varargin) %wrapper code
 % addpath(genpath('C:/Users/yewbreyr/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC/CQHC/matlab'));%experimental code
 % 
 %%%% Home RY PC
-% addpath(genpath('Z:/toolboxes'));%toolboxes
+% addpath(genpath('Z:/toolboxes/userfun'));%Joern Diedrichsen's util toolbox
+% addpath(genpath('Z:/toolboxes/RainCloudPlots-master')); %raincloud plot toolbox
 % addpath(genpath('C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC/CQHC/matlab'));%experimental code
 
+% Base Directory
+%
 %%%% CHBH RY PC
-baseDir= 'C:/Users/yewbreyr/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
-
+% baseDir= 'C:/Users/yewbreyr/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
+%
 %%%% Home RY PC
-% baseDir= 'C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
+baseDir= 'C:/Users/bugsy/OneDrive/Documents/University/PhD/3rd Year/bimanualCQ_HC';
 
 %Directory where psychoPy saves to
 rawDir= [baseDir '/bimanualCQ_HC2/data'];
@@ -30,11 +37,12 @@ rawDirUoB = [baseDir '/bimanualCQ_HC2brum/data'];
 saveDir= [baseDir '/CQHC/data'];
 
 %General variables that change analyses
-errorThreshold = 35; %error threshold for participant inclusion, default 20
+errorThreshold = 20; %error threshold for participant inclusion, default 20
+
 
 %Analysis Cases - switch as function input
 switch which
-    case 'loadData' %% Import files from .csv to .mat
+    case 'loadData'         %import task data files from .csv to .mat
         cd(rawDir);
         A=[]; %structure across subj
         S=[]; %structure across days
@@ -61,7 +69,7 @@ switch which
         save(fullfile(saveDir, filename), 'A')
         
         bimanualCQHC_ana('outliers') %run outliers case to view participants to exclude and add A.outlierError variable
-    case 'loadDemographics'
+    case 'loadDemographics' %import questionnaire data files
         cd(saveDir)
         
         %%% Delete the first and third rows of the excel sheet before you
@@ -119,7 +127,7 @@ switch which
         Q.gamerFiveHoursPlus = tbl.HowManyHoursOfGamingDoYouDoPerWeek__5_Hours_pleaseSpecify__Text;
         
         save('cqHC_questionnaire.mat','Q')
-    case 'outliers'
+    case 'outliers'         %identify outlier performance and add exclusion variable
         [A, ~] = CQHC_initCase(saveDir);
         
         %Plot number of erroneous presses (not trials) for each participant
@@ -174,7 +182,7 @@ switch which
         filename='cqHC_dataAll';
         save(fullfile(saveDir, filename), 'A')
         
-    case 'gradientRT' %plots probe RTs both raw and normalised to first position. Removes outliers.
+    case 'gradientRT' %plot probe RTs, raw and normalised to first position
         [A, ~] = CQHC_initCase(saveDir);%init
         
         %%%remove outliers and separate trials of interest into B struct
@@ -425,7 +433,7 @@ switch which
         disp(p)
         % ---------------------------------------------------------------- %
         
-    case 'plot'  %% Extract RT, errors per condition and plot
+    case 'plot'  %extract RT, errors per condition and plot
         [A, ~] = CQHC_initCase(saveDir);
         
         %Raincloud plot
@@ -470,7 +478,7 @@ switch which
         end%for probe position
         
         ylim([-4 8]);
-    case 'stats'  %% Basic stats
+    case 'stats'  %basic stats
         [A, subj] = CQHC_initCase(saveDir);
         
         B = structfun(@(X) X(A.trialType == 3 & A.day == 3 & A.points >= 1,:), A, 'Uni', false);

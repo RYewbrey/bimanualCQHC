@@ -1,5 +1,10 @@
 function rawFileName = bimanualCQHC_prepFileNames(rawDir, rawDirUoB)
+% rawFileName = bimanualCQHC_prepFileNames(rawDir, rawDirUoB)
 % Defines the filenames for bimanualCQHC experiment.
+% Inputs:
+%   rawDir    -  directory where psychoPy saves the data
+%   rawDirUoB - a second directory where psychoPy saves (for dual
+%               recruitment from two sona systems, delete if unnecessary)
 % Edit accordingly, only include participant ID numbers where there exists
 % 3 data files (one for each day). Will error if there are more or less
 % than 3 data files.
@@ -7,6 +12,7 @@ function rawFileName = bimanualCQHC_prepFileNames(rawDir, rawDirUoB)
 
 
 participantsBangor = {... %participant IDs from Bangor SONA
+    '23052', ...
     '26246', '26261', '26876', ...
     '27114', '27122', '27123', '27124', '27143', '27155', '27159', '27160', '27161', '27166','27171', '27175', '27179', '27187', '27193', '27198', '27199', ...
     '27203', '27217', '27219', '27227', '27257', '27258', '27259', '27264', ...
