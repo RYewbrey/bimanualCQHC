@@ -30,11 +30,17 @@ points      = tbl.finalPoints;
 respList    = tbl.respList;
 corAnsList  = tbl.corAnsList;
 
+%trial progress
+trialNBlock = tbl.trials_thisTrialN;
+
 %%% Write into the output structure D, acts as preallocation
 maxpress=4;%number of presses in production trials
 D.subjID=nan(size(day,1),1);                %subjID         - participant ID number
-D.day=nan(size(day,1),1);                   %day            - day 1/2/3
 D.date=cell(size(RTs,1),1);                 %date           - date completed
+D.day=nan(size(day,1),1);                   %day            - day 1/2/3
+D.BN=nan(size(day,1),1);                    %BN             - block number within days
+D.TN=nan(size(day,1),1);                    %TN             - trial number within days
+D.TNBlock=nan(size(day,1),1);               %TNBlock        - trial number within blocks
 D.seqSet=nan(size(day,1),1);                %seqSet         - set 1 or 2
 D.trialType=nan(size(day,1),1);             %trialType      - 1: InstructedB; 2: Probe 3: MemoryB
 D.fractal=nan(size(day,1),1);               %fractal        - sequence 1/2
@@ -50,6 +56,8 @@ D.responseKey=cell(size(day,1),maxpress);   %responseKey    - actual presses (sp
 D.pressKey=cell(size(day,1),maxpress);      %bimanPressKey  - target presses (specific keys)
 D.taskBug = zeros(size(day,1),1);           %taskBug        - bug in task causes some instructed & memory 
                                             %                 trials to have fewer than 4 target presses
+%Add variable to count through blocks as we loop through trials
+blockCounter = 0; %a TN of 0 indicates a new block
 
 for i=1:size(D.RT,1) %for trials, adding data to D struct as it goes
     
@@ -57,8 +65,13 @@ for i=1:size(D.RT,1) %for trials, adding data to D struct as it goes
         
         %Write out variables with length of 1:
         D.subjID(i)         = participant(i);
-        D.day(i)            = sscanf(day{i},'%*[^0123456789]%f');
         D.date{i}           = date(i);
+        D.day(i)            = sscanf(day{i},'%*[^0123456789]%f');
+        D.TNBlock(i)        = trialNBlock(i) + 1; %psychoPy uses 0 indexing, so add 1 to TN
+        if D.TNBlock(i) == 1 %increase block counter if TNBlock is 1
+            blockCounter = blockCounter + 1;
+        end
+        D.BN(i)             = blockCounter;
         D.seqSet(i,1)       = sscanf(seqSet{i},'%*[^0123456789]%f');
         D.trialType(i,:)    = trialType(i);
         D.fractal(i,:)      = fractal(i);
@@ -108,6 +121,7 @@ numrow=(isnan(D.points)); %1: no trial data; 0: trial data
 D.subjID(numrow==1,:)        =[];
 D.day(numrow==1,:)           =[];
 D.date                       = D.date(~cellfun(@isempty, D.date(:,1)), :);
+D.BN(numrow==1,:)            =[];
 D.seqSet(numrow==1,:)        =[];
 D.trialType(numrow==1,:)     =[];
 D.fractal(numrow==1,:)       =[];
@@ -165,5 +179,7 @@ D.error = D.bimanResponse == D.bimanPress | nanresponse & nanpress;
 D.error = ~D.error; %is there an error in the press? if so, 1
 errorSum = sum(D.error,2);
 D.errorTrial = errorSum ~= 0; %is there an error in the trial? if so, 1
+
+D.TN= (1:size(D.RT,1))';
 
 disp(D)
